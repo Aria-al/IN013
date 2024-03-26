@@ -23,21 +23,21 @@ void divisionEucli (int a, int b, int res[4])
 
 int inverseGroupeQuotient (int a, int p)
 {
+    int tab[4] = {0, 0, 0, 0} ; 
     int j = 1 ; 
-    int q[4] = {0, 0, 0, 0} ; 
-    divisionEucli(a, j, q) ; 
-    printf("%d = %d * %d + %d\n", q[0], q[1], q[2], q[3]) ; 
-    while ((j < 100) && (q[3] != 1))
+    divisionEucli(a * j, p, tab) ; 
+    printf("%d = %d * %d + %d\n", tab[0], tab[1], tab[2], tab[3]) ; 
+    while ((j < 100) && (tab[3] != 1))
     {
         j += 1 ; 
         for (int i = 0 ; i < 4 ; i++)
         {
-            q[i] = 0 ; 
+            tab[i] = 0 ; 
         }
-        divisionEucli(a, j, q) ; 
-        printf("%d = %d * %d + %d\n", q[0], q[1], q[2], q[3]) ; 
+        divisionEucli(a * j, p, tab) ; 
+        printf("%d = %d * %d + %d\n", tab[0], tab[1], tab[2], tab[3]) ; 
     }
-    return j ;
+    return j ; 
 }
 
 void alogEuclideEtendu (int a, int b, int res[3])
@@ -48,7 +48,7 @@ void alogEuclideEtendu (int a, int b, int res[3])
     int q = 0 ; 
     int rs, us, vs ; 
     int j = 0 ;
-    while ((rp) && (j < 100))
+    while ((rp) && (j < 10000))
     {
         q = r / rp ; 
         rs = r ; us = u ; vs = v ; 
@@ -90,16 +90,20 @@ int main(int argc, char const *argv[])
         case 3 :
             printf("Valeurs de a et p, Z/pZ\n") ; 
             scanf("%d %d", &a, &b) ; 
+            while (a < b)
+            {
+                a += b ; 
+            }
+            printf("a=%d, p=%d\n", a, b) ; 
             int q = inverseGroupeQuotient(a, b) ; 
             printf("%d\n", q) ; 
             break;
+
         default:
             break;
         }
         a = 0 ; 
         b = 0 ; 
     }
-    /*
-    */
     return 0;
 }
