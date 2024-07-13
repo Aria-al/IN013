@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "EuclideExtend.h"
+#include "InversionMatrice.h"
 
 
 // Crée une matrice n x m 
@@ -204,14 +204,16 @@ void dilateLigne (mat *m, int coef, int ligne, int premier, char type)
         coef = inverseGroupeQuotient(coef, premier) ; 
         for (int j = 0 ; j < m->m ; j++)
         {
-            (m->mat)[ligne][j] = ((coef * (m->mat)[ligne][j] % premier) + premier) % premier ; 
+            //(m->mat)[ligne][j] = (coef * (m->mat)[ligne][j] % premier) + premier ; 
+            (m->mat)[ligne][j] = produitGroupe(coef, (m->mat)[ligne][j], premier) ; 
         }
         break ;
 
     case 'm' : 
         for (int j = 0 ; j < m->m ; j++)
         {
-            (m->mat)[ligne][j] = (coef * (m->mat)[ligne][j]) % premier ; 
+            //(m->mat)[ligne][j] = (coef * (m->mat)[ligne][j]) % premier ; 
+            (m->mat)[ligne][j] = produitGroupe(coef, (m->mat)[ligne][j], premier) ; 
         }
         break ; 
 
@@ -253,7 +255,8 @@ void transvectionLigne (mat *m, int l1, int coef, int l2, int premier, char type
 
         for (int j = 0 ; j < m->m ; j++)
         {
-            (m->mat)[l1][j] = (((m->mat)[l1][j] + (coef * (m->mat)[l2][j] % premier))  + premier) % premier; 
+            //(m->mat)[l1][j] = (((m->mat)[l1][j] + (coef * (m->mat)[l2][j] % premier))  + premier) % premier; 
+            (m->mat)[l1][j] = sommeGroupe((m->mat)[l1][j], produitGroupe(coef, (m->mat)[l2][j], premier), premier) ; 
         }
         break ;
 
@@ -261,7 +264,8 @@ void transvectionLigne (mat *m, int l1, int coef, int l2, int premier, char type
 
         for (int j = 0 ; j < m->m ; j++)
         {
-            (m->mat)[l1][j] = ((m->mat)[l1][j] + (inverseGroupeQuotient(coef, premier) * (m->mat)[l2][j] % premier)) % premier; 
+            //(m->mat)[l1][j] = ((m->mat)[l1][j] + (inverseGroupeQuotient(coef, premier) * (m->mat)[l2][j] % premier)) % premier; 
+            (m->mat)[l1][j] = sommeGroupe((m->mat)[l1][j], produitGroupe(inverseGroupeQuotient(coef, premier), (m->mat)[l2][j], premier), premier) ; 
         }
         break ; 
 
@@ -298,13 +302,13 @@ mat *lireMatrice (FILE *f)
     if (fgets(buff, MAXBUFF, f) == NULL) 
     {
         printf("Erreur de lecture du fichier pour lireMatrice\n") ; 
-        return 0 ; 
+        return NULL ; 
     }
 
     if (sscanf(buff, "n : %d, m : %d\n", &n, &m) != 2) 
     {
         printf("Mauvais format de fichier pour lireMatrice\n") ; 
-        return 0 ; 
+        return NULL ; 
     }
 
     mat *res = creeMatrice(n, m) ; 
@@ -347,6 +351,12 @@ mat *eliminationGaussJordan (mat *pa, int premier)
 {
     mat *m = copieMatrice(pa) ; 
     mat *res = matriceDiag(1, m->m) ; 
+    if (!(detMatrice(m) % premier))
+    {
+        libereMatrice(m) ; 
+        libereMatrice(res) ; 
+        return NULL ; 
+    }
 
     int lignePivot = 0 ; 
 
@@ -400,4 +410,16 @@ mat *eliminationGaussJordan (mat *pa, int premier)
 
     return res ; 
 
+}
+
+
+void regulariseMatrice (mat *m, int p)
+{
+    for (int i = 0 ; i < m->n ; i++)
+    {
+        for (int j = 0 ; j < m->m ; j++)
+        {
+            (m->mat)[i][j] = (m->mat)[i][j] % p ; 
+        }
+    }
 }

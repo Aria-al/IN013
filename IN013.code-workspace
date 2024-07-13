@@ -7,7 +7,9 @@
 	"settings": {
 		"files.associations": {
 			"stdlib.h": "c",
-			"stdio.h": "c"
+			"stdio.h": "c",
+			"inversionmatrice.h": "c",
+			"euclidealgos.h": "c"
 		}
 	}
 }

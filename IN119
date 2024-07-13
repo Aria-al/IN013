@@ -1,0 +1,1295 @@
+http://stl.algo-prog.info:8107/
+
+(* Renvoie 17, type int*)
+(3 * 5) + 2;;
+
+(* Renvoie 14, type int*)
+((fun x -> 2 * x) 7);;
+
+(* Renvoie 30, type int*)
+((fun x -> 2 * x) (3 * 5));;
+
+(* Renvoie 21, type int*)
+(((fun x -> (fun y -> x * y)) 3) 7);;
+
+(* Renvoie 21, type int*)
+((fun x -> fun y -> x * y) 3 7);;
+
+(* Renvoie 5, type int*)
+(fun f -> fun x -> (f x) + x) (fun x -> x - 1) 3;;
+
+(* Renvoie 3, type int*)
+let (x, y) = (1, 2) in x + y;;
+
+(* Renvoie 3, type int*)
+let a = (1, 2) in
+let (x, y) = a in x + y;;
+
+(* Renvoie (f x = x + 1, 3), type (int -> int) * int*)
+let f x = x + 1 in (f, 3);;
+
+(*
+if b then (fun x -> x) else 0 ;;
+Ne compile pas, 0 est de type int alors que fun x->x est de type int->int
+*)
+(* Renvoie f x = x, type (int -> int)*)
+let b = true in if b then (fun x -> x) else (fun x -> 0) ;;
+
+(* Renvoie 6, type int*)
+let b = true in ((if b then (fun x -> x + 1) else (fun x -> x - 1)) 5);;
+
+(* Renvoie 1è, type int*)
+((fun b ->((fun x -> fun y -> 2 * x + 3 * y) (if b then 1 else 2) 5)) true);;
+
+(* Renvoie true, type int*)
+let f = fun x -> not x in
+let g = fun f -> fun x -> fun y -> (f (not x)) && (f y) in
+(g f true false);;
+
+
+
+
+
+(* Q1 *)
+let fst (x, y) = x ;;
+  
+
+let snd (x, y) = y ;;
+
+
+(* Q2 *)
+
+let paire x y = (x, y) ;;
+
+let paire_true x = (true, x) ;; 
+
+let curry (f : 'a * 'b -> 'c)  =  fun (x :'a) (y :'b) -> (f (paire x y)) ;; 
+
+let uncurry (g : 'a -> 'b -> 'c) : (('a * 'b) -> 'c) = fun ((x, y) : ('a * 'b)) ->
+  g x y ;;
+
+(* Q1 *)
+
+let et_bool (a:bool) (b:bool) : bool =
+  match (a, b) with 
+  |  (true, true) -> true  
+  |  (_, false) -> false 
+  |  (false, _) ->false ;;
+      
+
+
+let ou_bool (a:bool) (b:bool) : bool =
+  match (a, b) with 
+  | (true, _) -> true 
+  | (_, true) -> true 
+  | (_, _) -> false ;;
+
+
+let non_bool (a:bool) : bool =
+  if a then false else true ;;
+
+
+(* Q2 *)
+
+let impl_bool (a:bool) (b:bool) : bool =
+  ou_bool (non_bool a) b ;;
+
+let equiv (a:bool) (b:bool) : bool =
+  et_bool (impl_bool a b) (impl_bool b a) ;;
+
+
+
+(* Q3 *)
+let xor (a:bool) (b:bool) : bool =
+  et_bool (ou_bool a b) (non_bool (et_bool a b))
+  
+  
+  
+  (* Q1 *)
+let application (f : ('a -> 'b)) (x : 'a) = 
+  f x ;;
+
+
+
+(* Q2 *)
+let composition (f : ('b -> 'c)) (g : ('a -> 'b)) (x : 'a) : 'c =
+  f (g x) ;;  
+
+
+
+(* Q3 *)
+let f_ou_ident (f : ('a -> 'a)) (mode : bool) (x:'a) : 'a = 
+  if mode then x else f x ; 
+  
+  
+  
+  
+(* Q2 *)
+
+(* fonction injective : identité *) 
+(* fonction non injective : false *) 
+
+let est_injective (f : (bool -> bool)) : bool = 
+  f true != f false ;;
+
+
+(* Q3 *)
+
+let est_commutative (f : (bool -> bool -> bool)) : bool =
+  f true false = f false true ;;
+
+
+
+(* Q4 *)
+
+let est_reciproque (f : (bool -> bool)) (g : (bool -> bool)) : bool =
+  f (g true) && (not ( f (g false)))  ;;
+
+
+
+(* Q5 *)
+
+let reciproque (f : (bool -> bool)) : (bool -> bool) = 
+  fun b : bool -> f b ;;
+  
+  
+  
+  
+  (* Q.2 *)
+
+let xor (a : bit) (b : bit) : bit =
+  (a || b) && (not (a && b)) ;;
+
+(* Q.3 *)
+
+let rec half_adder (a : bit) (b : bit) : (bit * bit) =
+  (xor a b, a && b) ;;
+
+(* Q.4 *)
+
+let adder (a : bit) (b : bit) (c : bit) : (bit * bit) =
+  match (half_adder a b) with 
+  | (s1, r1) -> 
+      (
+        match (half_adder c s1) with 
+        | (s2, r2) -> 
+            (s2, r1 || r2)
+      ) ;;
+
+(* Q.6 *)
+(*
+let duet_adder (a : duet) (b : duet) (c : bit) : (duet * bit) = 
+  match (adder (fst a) (fst b) c) with 
+  | (s1, r1) ->
+      match (adder (snd a) (snd b) r1) with 
+      | (s2, r2) ->
+          (half_adder s2 r2, s1) ;;
+
+*)
+
+let duet_adder (a : duet) (b : duet) (c : bit) : (duet * bit) = 
+  let (a1, a2) = a in 
+  let (b1, b2) = b in 
+  let (s2, r2) = adder a2 b2 c in 
+  let (s1, r1) = adder a1 b1 r2 in 
+  (s1, s2), r1 ;;
+          
+
+(* Q.7 *)
+
+
+let quartet_adder (a : quartet) (b : quartet) (c : bit) : (quartet * bit) =
+  match a with 
+  | (x1, x2, x3, x4) ->
+      match b with 
+      | (y1, y2, y3, y4) ->
+          match duet_adder (x3, x4) (y3, y4) c with 
+          | (b1, r1) ->
+              match duet_adder (x1, x2) (y1, y2) r1 with 
+              | (b2, r2) -> 
+                  ((fst b2, snd b2, fst b1, snd b1), r2) ;;
+
+quartet_adder (false, false, false, true) (true, true, true, true) false 
+
+(* Q.8 *)
+
+let to_quartet (i : int) : quartet =
+  ( (i/8) mod 2 = 1, (i/4) mod 2 = 1, (i/2) mod 2 = 1, i mod 2 =1) ; 
+
+
+let rec fact (n:int) : int = 
+  match n with 
+  | 0 -> 1 
+  | _ -> n * fact (n-1) ;;
+
+
+let fact2 (n:int) : int =
+  let rec aux n a = 
+    match n with 
+    | 0 -> a 
+    | _ -> aux (n-1) (a * n) 
+  in aux n 1 ;;
+  
+  
+  
+  (* Q1 *)
+let rec sum_n (n:int) : int =
+  match n with 
+  | 0 -> 0 
+  | _ -> n + sum_n (n-1) ;;
+
+(* Q2 *)
+let sum_n2 (n:int) : int =
+  let rec sumT n = match n with 
+    | 0 -> 0 
+    | _ -> if n < 0 then raise (Invalid_argument "sum_n") else n + sumT (n-1)
+  in sumT n ;;
+      
+
+(* Q3 *)
+let rec sum_p (n:int) : int =
+  match n with 
+  | 0 -> 0 
+  | _ -> sum_p(n-1) + (2*n) ;;
+
+(* Q4 *)
+let rec sum_f (f : int -> int) (n:int) : int =
+  match n with 
+  | 0 -> f 0 
+  | _ -> f n + sum_f f (n-1) ;;
+
+let sum_p2 (n:int) : int =
+  let f n = 2 * n 
+  in sum_f f n ;;
+  
+  
+  
+  (* Q1 *)
+let rec u (n:int) : int = match n with 
+  | 0 -> 42 
+  | _ -> 3 * u (n-1) + 4 ;;
+
+(* Q2 *)
+let rec sum_u (n:int) : int = match n with 
+  | 0 -> 42 
+  | _ -> u n + sum_u (n-1) ;;
+
+(* Q3 *)
+let sum_u2 (n:int) : int =
+  let rec loop (n:int) (t:int) : int = match n with 
+    | 0 -> t
+    | _ -> t + loop (n-1) (3 * t + 4  )
+  in loop n 42 ;;
+  
+  
+  
+  
+  (* Q1 *)
+(* On suppose que a < b*)
+let rec sum_inter (a:int) (b:int) : int = 
+  if (a > b) then 0 else a + sum_inter (a + 1) b
+
+(* Q2 *)
+let rec sum1_inter (k:int) (a:int) (b:int) : int =
+  if (a > b) then 0 else a + k + sum1_inter k (a+1) b
+
+(* Q3 *)
+let rec sum2_inter (a:int) (b:int) : int = 
+  if (a > b) then 0 else ((2 * (sum1_inter a a b)) - (2 * a)) + sum2_inter (a+1) b ;;
+  
+  
+  
+  (* Q1 *)
+let float_of_3int (t:int * int * int) : (float *float *float) = 
+  match t with 
+  | (i1, i2, i3) -> (float_of_int i1, float_of_int i2, float_of_int i3) ;;
+
+(* Q2 *)
+let valeur_poly ((a,b,c):(int*int*int)) (f : float) : float =
+  match float_of_3int (a, b, c) with 
+  | (f1, f2, f3) -> (f1*.f*.f) +. (f2*.f) +. f3 ;;
+
+(* Q3 *)
+let discriminant ((a,b,c):(int*int*int)) : int =
+  b * b - (4 * a * c) ;;
+
+(* Q4 *)
+let nb_solution (d: int) : int =
+  match d with 
+  | 0 -> 1 
+  | _ -> if d > 0 then 2 else 0 ;;
+
+(* Q5 *)
+
+
+let solutions ((a,b,c):(int*int*int)) : (float * float) =
+  let d = discriminant (a, b, -c) in 
+  if nb_solution d = 0 then (0.0, 0.0) else
+    let bt = -.(float_of_int b) 
+    and at = (float_of_int  (2 * a)) 
+    and dt = (sqrt (float_of_int d)) 
+    in if nb_solution d = 1 then
+      let s = bt /. at in 
+      (s, s) 
+    else ((bt +. dt) /. at , (bt -. dt) /. at) ;;
+    
+    
+    
+    (* Q1 *)
+let rec less_divider (i:int) (n:int) : int = 
+  if i = n then 0 else 
+  if n mod i = 0 then i else less_divider (i+1) n
+
+(* Q2 *)
+let prime (n : int) : bool = 
+  if n <= 1 then false else 
+    less_divider 2 n = 0 ;;
+
+(* Q3 *)
+let rec next_prime (n : int) : int = 
+  if prime n then n else next_prime (n+1) ;;
+
+(* Q4  *)
+let nth_prime (n : int) : int = 
+  let rec aux n k = 
+    if n = 0 then k else aux (n-1) (next_prime (k + 1)) 
+  in
+  aux n 2 ;;
+  
+  
+  
+  (* Q1 *)
+let rec p (n:int) : float = 
+  match n with 
+  | 1 -> 1. 
+  | _ -> 1. /. (float_of_int (n*n)) +. p (n-1) ;;
+    
+
+
+let f n = sqrt (6. *. p n) ;; 
+
+(* f 500 = 3.13968412313872181 *)
+(* f 5000 = 3.14140168095094285 *)
+(* Stack overflow during evaluation (looping recursion?). : on a atteint la 
+limite du nombre d'appels récursifs possible*)
+
+
+(* Q2 *)
+let p' (n:int) : float = 
+  let rec aux (n : int) (s : float) : float = 
+    match n with 
+    | 1 -> 1. +. s 
+    | _ -> aux (n-1) (s +. (1. /. ((float_of_int n) *. (float_of_int n))))
+  in aux n 0. ;; 
+
+let f' n = sqrt (6. *. p' n) ;;
+
+f' 500000 ;;
+(*f' 5000000 = 3.14159246260387492 *)
+
+
+
+
+
+(* Q1 *)
+let f (a:float) (x:float) : float =
+  1. /. 2. *. ( x +. a /. x);;
+
+
+
+(* Q2 *)
+let rec sqrt_n (n:int) (a:float) (x:float) =
+  if n > 0 then sqrt_n (n-1) a (f a x) else x ;;
+
+
+
+(* Q3 *)
+let eq_eps (e:float) (x:float) (y:float) : bool =
+  let d = abs_float (x -. y)
+  in d <= e ;;
+  
+
+
+(* Q4 *)
+let rec sqrt_x (e:float) (a:float) (r:float) : float =
+  if eq_eps e r (f a r) then (f a r) else sqrt_x e a (f a r) ;; 
+  
+  
+  
+  
+(* Q1 *)
+
+let rec fib n =
+  if n <= 1 then 1 else fib (n-1) + fib (n-2) ;;
+
+
+(* Q2 *)
+
+let fib2 n =
+  let rec aux n a2 a1 = 
+    if n <= 2 then a2 + a1 else aux (n -1) a1 (a2 + a1)
+  in if n <= 1 then 1 else aux n 1 1 ;;
+    
+
+
+(* Q3 *)
+
+let rec f91 n =
+  if n > 100 
+  then 
+    (n - 10) 
+  else
+    f91 (f91(n+11)) 
+;;
+       
+
+
+(* Q4 *)
+
+let rec even n = 
+  if (n = 0) 
+  then 
+    true 
+  else 
+    odd (n-1) 
+and odd n = 
+  if (n = 0)
+  then
+    false
+  else
+    even (n-1)
+;;
+
+
+(* Q5 *)
+
+let rec syracuse n = 
+  match n with 
+  | 1 -> 1 
+  | _ -> 
+      if (even n) 
+      then 
+        syracuse(n/2)
+      else 
+        syracuse((3 * n) + 1) 
+;;
+        
+
+
+(* Q6 *)
+
+let rec ack m n = 
+  match m, n with 
+  | 0, 0 -> 1
+  | _, 0 -> ack (m-1) 1
+  | 0, _ -> n + 1 
+  | _, _ -> ack (m-1) (ack m (n-1))
+;;
+
+
+(* Q1 *)
+let  repeat (n:int) (x:'a) : 'a list  =
+  let rec aux n i l =
+    match i with 
+    | 0 -> []
+    | _ -> n :: (aux n (i-1) l)
+  in
+  if n < 0 
+  then [] 
+  else aux x n [] 
+;; 
+    
+
+
+(* Q2 *)
+let range (i : int) (j : int) : int list = 
+  let rec aux k j =
+    if (k > j) 
+    then []
+    else k :: (aux (k+1) j)
+  in
+  aux i j 
+;;
+
+(* Q3 *)
+let range_bis (x : int) (n : int) : int list = 
+  let rec aux x r n =
+    if (r >= n) 
+    then []
+    else (x+r) :: (aux x (r+1) n)
+  in 
+  if (n <= 0) 
+  then 
+    []
+  else
+    aux x 0 n
+;;
+
+
+(* Q1 *)
+let  begaie (l: 'a list) : 'a list =
+  let rec aux l =
+    match l with 
+    | [] -> []
+    | x::xs -> x::x::(aux xs)
+  in
+  aux l
+;;
+
+
+(* Q2 *)
+let somme_tr (l : int list) : int =  
+  let rec aux a li =
+    match li with 
+    | [] -> a
+    | x::xs -> aux (a+x) xs
+  in
+  aux 0 l
+;;
+
+(* Q3 *)
+let somme (l : int list) : int =  
+  let rec aux li =
+    match li with 
+    | [] -> 0 
+    | x::xs -> x + (aux xs)
+  in
+  aux l
+;;
+
+(* Q4 *)
+let flatten (l : ('a list) list) : ('a list) = 
+  let rec aux li =
+    match li with 
+    | [] -> []
+    | x::xs -> x @ (aux xs)
+  in 
+  aux l
+;;
+
+(*  Q5  *)
+let rec flatten_bis (l : 'a list list) : 'a list = 
+  let rec aux a l =
+    match l with 
+    | [] -> a 
+    | [] :: xs -> aux a xs
+    | x :: xs -> aux (List.hd x :: a) (List.tl x :: xs)
+  in List.rev (aux [] l)
+  
+  
+  
+  (* Exercice n°3 *)
+(* Q1 *)
+let rec drop (n:int) (xs:'a list) : ('a list) = 
+  if 
+    n <= 0 
+  then
+    xs
+  else
+    match xs with
+    | [] -> []
+    | x::xs -> drop (n-1) xs
+;;
+
+(* Q2 *)
+let take1 (n : int) (l : 'a list) : 'a list = 
+  if 
+    (n <= 0) 
+  then 
+    []
+  else 
+    let rec aux l i = 
+      match l with 
+      | [] -> []
+      | x::xs -> if (i <= 0) then [] else x::(aux xs (i-1))
+    in
+    aux l n
+;;
+    
+    
+
+let take2 (n : int) (l : 'a list) : 'a list  =
+  if 
+    (n < 0)
+  then
+    raise (Invalid_argument "take")
+  else
+    let rec aux l i =
+      match l with 
+      | [] -> 
+          if 
+            (i > 0) 
+          then 
+            raise (Invalid_argument "take")
+          else
+            []
+      | x::xs -> 
+          if 
+            (i = 0) 
+          then 
+            []
+          else
+            x::(aux xs (i-1))
+    in
+    aux l n
+;;
+
+(* Q3 *)
+let sub (xs : 'a list) (start : int) (len : int) : 'a list = 
+  if start < 0 then 
+    take1 len xs
+  else
+    let rec aux l i = 
+      match l with 
+      | [] -> []
+      | x::xs -> 
+          if 
+            (i <= 0) 
+          then 
+            x::xs
+          else
+            aux xs (i-1)
+    in
+    take1 len (aux xs start)
+;;
+
+
+
+
+(* Q1 *)
+type ('a, 'b) list_assoc = 'a -> ('a * 'b) list -> 'b
+
+(* Q2 *)
+
+let rec list_assoc (k:'a) (kvs:('a*'b) list) : 'b = 
+  match kvs with 
+  | [] -> raise Not_found 
+  | x::xs -> 
+      match x with 
+      | (u, v) ->
+          if 
+            (u = k)
+          then 
+            v
+          else
+            list_assoc k xs
+;;
+
+(* Q3 *)
+let list_assocs (k:'a) (kvs:('a*'b) list) : 'b list = 
+  let rec aux (key : 'a) (xs :('a*'b) list) (a :'b list) : 'b list=
+    match xs with 
+    | [] -> a 
+    | x::xs -> match x with 
+      | (u, v)  -> 
+          if 
+            (u = key)
+          then 
+            aux k xs (v::a)
+          else
+            aux k xs a
+  in
+  aux k kvs []
+;;
+
+(* Q4 *)
+let list_combine (kys:'a list) (vls:'b list) : ('a*'b) list = 
+  let aux (a : 'a) (b : 'b) : ('a * 'b) =
+    (a, b)
+  in 
+  List.map2 aux kys vls
+;;
+
+(* Q5 *)
+let mem (x : 'a) (dct : ('a *'b) list) : bool = 
+  let aux (cpl : ('a*'b)) : bool =
+    match cpl with 
+    | (u, v) -> (u = x)
+  in
+  List.exists aux dct 
+;;
+
+
+
+
+
+let films = [
+  ("Pulp Fiction", ("Tarantino","Quentin"), 1994, [("Travolta","John")  ; ("Thurman","Uma")])
+; ("Psychose"    , ("Hitchcock","Alfred") , 1960, [("Perkins","Anthony"); ("Leigh","Janet")])
+; ("Shining"     , ("Kubrick","Stanley")  , 1980, [("Nicholson","Jack") ; ("Duvall","Shelley")])
+; ("Barry Lyndon", ("Kubrick","Stanley")  , 1975, [("Dullea","Keir")    ; ("Lockwood","Gary")])
+; ("Grease"      , ("Randal","Kleiser")   , 1978, [("Travolta","John")  ; ("Olivia","Newton-John")])
+]
+
+(* Q1 *)
+type film_t = (string * (string * string) * int * (string * string) list) list
+
+(* Q2 *)
+let titres (l : film_t) : string list = 
+  let aux (f : (string * (string * string) * int * (string * string) list)) : string =
+    match f with 
+    |(u, _, _, _) -> u
+  in 
+  List.map aux l
+
+(* Q3 *)
+let film_1980 (l : film_t) : string list = 
+  let aux1 (f : (string * (string * string) * int * (string * string) list)) : bool =
+    match f with
+    | (_, _, d, _) -> d = 1980
+  in
+  let aux2 (f : (string * (string * string) * int * (string * string) list)) : string =
+    match f with 
+    |(u, _, _, _) -> u
+  in 
+  (List.map aux2) (List.filter aux1 l)
+    
+  
+
+(* Q4  *)
+let film_by_actor (prenom : string) (nom : string) (l : film_t) : string list = 
+  let aux1 ((n, p) : (string * string)) : bool = 
+    (n = nom) && (p = prenom)
+  in
+  let aux2 (f : (string * (string * string) * int * (string * string) list)) : bool = 
+    match f with 
+    | (_, _, _, ls) ->
+        let rec iter (lact : (string * string) list) : bool =
+          match lact with 
+          | [] -> false 
+          | x::xs -> if (aux1 x) then true else iter xs
+        in 
+        iter ls
+  in  
+  let aux3 (f : (string * (string * string) * int * (string * string) list)) : string =
+    match f with 
+    |(u, _, _, _) -> u
+  in 
+  (List.map aux3) (List.filter aux2 l)
+  
+  
+  
+  
+  (* Q1 *)
+
+(*List.fold_right : ('a->'b->'b)-> ('a list) -> ('b list) (* ??? *)*) ;;
+
+(* Q2: *)
+let somme_list (l : int list) : int = 
+  let rec aux l a =
+    match l with 
+    | [] -> a
+    | x::xs -> aux xs (a+x)
+  in 
+  aux l 0
+    
+
+(* Q3: *)
+let list_map (f : 'a->'b) (l : 'a list) : 'b list = 
+  let aux (e1 : 'a) (e2 : 'b list) : 'b list =
+    f e1 :: e2
+  in 
+  List.fold_right aux l []
+  
+let list_filter (f : 'a->bool) (l : 'a list) : 'b list = 
+  let aux (e1 : 'a) (e2 : 'b list) : 'b list =
+    if 
+      (f e1)
+    then 
+      e1 :: e2
+    else
+      e2
+  in 
+  List.fold_right aux l []
+
+(* Q4: *)
+let list_fold_right (f : 'a->'b->'b) (l : 'a list) (e : 'b) : 'b = 
+  let rec aux (l' : 'a list) =
+    match l' with 
+    | [] -> e
+    | x::xs -> f x (aux xs)
+  in 
+  aux l
+
+(* Q5: *)
+let list_fold_left (f : 'a->'b->'a) (e : 'a) (l : 'b list) : 'a = 
+  let rec aux (l' : 'b list) = 
+    match l' with 
+    | [] -> e
+    | x::xs -> f (aux xs) x
+  in 
+  aux l
+(* Q6: *)
+let list_forall (p : 'a->bool) (l : 'a list) : bool = 
+  let aux (e1: bool) (e2 : 'a) : bool =
+    e1 && (p e2)
+  in
+  List.fold_left aux true l 
+    
+let list_exists (p : 'a->bool) (l : 'a list) : bool = 
+  let aux (e1: bool) (e2 : 'a) : bool =
+    e1 || (p e2)
+  in
+  List.fold_left aux false l ;;
+  
+list_forall (fun x -> (x mod 3 = 0)) [3; 6; 9; 12]  ;;
+list_forall (fun x -> (x mod 3 = 0)) [3; 7; 6; 9; 12] ;;
+list_exists (fun x -> (x mod 3 = 0)) [1; 3; 2; 9; 12]  ;;
+list_exists (fun x -> (x mod 3 = 0)) [1; 4; 8 ; 13] ;;
+
+
+
+
+
+
+(* Q1 *)
+let merge (f : 'a->'a->bool) (l1 : 'a list) (l2 : 'a list) : 'a list = 
+  let rec aux (l1' : 'a list) (l2' : 'a list) : 'a list =
+    match l1', l2' with 
+    | [], [] -> []
+    | x1::xs1, [] -> l1'
+    | [], x2::xs2 -> l2'
+    | x1::xs1, x2::xs2 -> if (f x1 x2) then x1::(aux xs1 l2') else x2::(aux l1' xs2)
+  in
+  aux l1 l2;;
+  
+(*
+| x1::xs1, [] -> l1' @ acc @ l1'
+| [], x2::xs2 -> l2' @ acc @ l2'
+*)
+(* Q2 *)
+let merge_tr (f : 'a->'a->bool) (l1 : 'a list) (l2 : 'a list) : 'a list =
+  let rec auxT (l1' : 'a list) (l2' : 'a list) (acc : 'a list) : 'a list =
+    match l1', l2' with 
+    | [], [] -> []
+    | x1::xs1, [] -> (List.rev l1') @ acc
+    | [], x2::xs2 -> (List.rev l2') @ acc
+    | x1::xs1, x2::xs2 -> if (f x1 x2) then auxT xs1 l2' (x1::acc) else auxT l1' xs2 (x2::acc) 
+  in 
+  (List.rev (auxT l1 l2 []))
+(* Q3 *)
+let split (l: 'a list) : ('a list * 'a list) = 
+  let rec aux (l : 'a list) (b : bool) : ('a list * 'a list)  = 
+    match l with 
+    | [] -> ([],[])
+    | x::xs ->
+        let nT = aux xs (not b) in
+        if b
+        then
+          (fst(nT), x::snd(nT))
+        else
+          (x::fst(nT), snd(nT))
+  in
+  aux l false
+
+(* Q4 *)
+let split_tr (l: 'a list) : ('a list * 'a list) = 
+  let rec aux (l : 'a list) (b : bool) (acc : ('a list * 'a list)) : ('a list * 'a list) =
+    match l with 
+    | [] -> acc
+    | x :: xs ->
+        if b 
+        then
+          aux xs (not b) (fst(acc), x::snd(acc))
+        else
+          aux xs (not b) (x::fst(acc), snd(acc))
+  in
+  let r = aux l false ([],[])
+  in (List.rev (fst r), List.rev (snd r))
+    
+    
+
+(* Q5 *)
+let merge_sort (f : 'a->'a->bool) (l : 'a list) : 'a list = 
+  let rec aux lp = 
+    match split_tr lp with 
+    | (l1, l2) -> 
+        let lc = (merge_tr f l1 l2) in
+        if lc = lp then lp else aux lc
+  in
+  aux l
+                    
+    
+
+
+(* Q6 *)
+let padding (l1 : 'a list) (l2 : 'a list) (v : 'a) : ('a list * 'a list) = 
+  let rec aux (l1' : 'a list) (l2' : 'a list) =
+    match l1', l2' with 
+    | [], [] -> ([], [])
+    | x1::xs1, x2::xs2 -> 
+        let u = aux xs1 xs2 in
+        (x1::(fst u), x2::(snd u))
+    | [], x::xs -> 
+        let u = aux [] xs in
+        (v::(fst u), x::(snd u))
+    | x::xs, [] ->
+        let u = aux xs [] in
+        (x::(fst u), v::(snd u))
+  in
+  aux l1 l2
+    
+let padding_tr (l1 : 'a list) (l2 : 'a list) (v : 'a) : ('a list * 'a list) = 
+  let rec aux (l1' : 'a list) (l2' : 'a list) (acc : ('a list * 'a list)) : ('a list * 'a list) =
+    match l1', l2' with 
+    | [], [] -> acc
+    | x1::xs1, x2::xs2 -> aux xs1 xs2 (x1::(fst acc), x2::(snd acc))
+    | [], x::xs -> aux [] xs (v::(fst acc), x::(snd acc))
+    | x::xs, [] -> aux xs [] (x::(fst acc), v::(snd acc))
+  in
+  let u = aux l1 l2 ([], []) in
+  (List.rev (fst u), List.rev (snd u))
+
+(* Q7 *)
+let lex (f : 'a->'a->bool) (u : 'a) (l1 : 'a list) (l2 : 'a list) : bool = 
+  match padding_tr l1 l2 u with 
+  | (l1', l2') ->
+      let rec aux (u : 'a list) (v : 'a list) : bool =
+        match u, v with 
+        | [], [] -> true 
+        | x1::xs1, x2::xs2 -> if x1 = x2 then aux xs1 xs2 else if (f x1 x2) then true else false
+        | _ -> assert false
+      in
+      aux l1' l2' 
+
+(* Q8 *)
+let cmp_bool (b1:bool) (b2:bool) : bool =
+  match b1, b2 with
+  | false, true -> true
+  | _ -> false
+
+let sort_bool_list (l : bool list list) : bool list list = 
+  merge_sort (lex cmp_bool false) l
+  
+  
+  
+  
+  (* Q1 *)
+
+let tree : int btree = Node (Node (Node (Empty, 2, Empty), 7, Node(Node(Empty, 5, Empty) , 6, Node(Empty, 11, Empty))) , 2, Node (Empty , 5, Node (Node(Empty, 4, Empty) , 9,Empty ) ) );;
+
+(* Q2 *)
+
+let taille (t : 'a btree) : int = 
+  let rec aux t = 
+    match t with 
+    | Empty -> 0 
+    | Node (g, _, d) -> 1 + aux g + aux d
+  in
+  aux t 
+
+(* Q3 *)
+
+let hauteur (t : 'a btree) : int = 
+  let rec aux t = 
+    match t with 
+    | Empty -> 0 
+    | Node (g, _, d) -> 1 + max (aux g) (aux d)
+  in
+  aux t 
+
+(* Q4 *)
+
+let list_by_depth (t : 'a btree) (n : int) : 'a list = 
+  let rec aux (t : 'a btree) (i : int) (acc : 'a list) : 'a list =
+    match t with 
+    | Empty -> acc
+    | Node(g, x, d) -> if i != 0 then 
+          let acc1 = acc @ (aux g (i-1) acc)
+          in acc1 @ (aux d (i-1) acc)
+        else x::acc
+  in
+  aux t n []
+    
+    
+let to_list (t : 'a btree) : 'a list =
+  let rec aux (t' : 'a btree) (l : 'a list) : 'a list =
+    match t' with 
+    | Empty -> l 
+    | Node(g, x, d) -> (x::(aux g l))@(aux d l)
+  in
+  aux t []
+  
+  
+  
+  
+  (* Q1 *)
+
+let tree : int btree = Node (Node (Node (Empty, 2, Empty), 7, Node(Node(Empty, 5, Empty) , 6, Node(Empty, 11, Empty))) , 2, Node (Empty , 5, Node (Node(Empty, 4, Empty) , 9,Empty ) ) );;
+
+(* Q2 *)
+
+let taille (t : 'a btree) : int = 
+  let rec aux t = 
+    match t with 
+    | Empty -> 0 
+    | Node (g, _, d) -> 1 + aux g + aux d
+  in
+  aux t 
+
+(* Q3 *)
+
+let hauteur (t : 'a btree) : int = 
+  let rec aux t = 
+    match t with 
+    | Empty -> 0 
+    | Node (g, _, d) -> 1 + max (aux g) (aux d)
+  in
+  aux t 
+
+(* Q4 *)
+
+let list_by_depth (t : 'a btree) (n : int) : 'a list = 
+  let rec aux (t : 'a btree) (i : int) (acc : 'a list) : 'a list =
+    match t with 
+    | Empty -> acc
+    | Node(g, x, d) -> if i != 0 then 
+          let acc1 = acc @ (aux g (i-1) acc)
+          in acc1 @ (aux d (i-1) acc)
+        else x::acc
+  in
+  aux t n []
+    
+    
+let to_list (t : 'a btree) : 'a list =
+  let rec aux (t' : 'a btree) (l : 'a list) : 'a list =
+    match t' with 
+    | Empty -> l 
+    | Node(g, x, d) -> (x::(aux g l))@(aux d l)
+  in
+  aux t []
+  
+  
+  
+  
+  (* Q1 *)
+let hauteur (t :'a ubtree) : int = 
+  let rec aux t' = 
+    match t' with 
+    | Empty2 -> 0 
+    | Leaf _ -> 1
+    | Node2 (g, _, d) -> 1 + (max (aux g) (aux d))
+  in
+  aux t 
+
+(* Q2 *)
+let leaves (t : 'a ubtree) : 'a list = 
+  let rec aux t' l = 
+    match t' with 
+    | Empty2 -> []
+    | Leaf x -> [x]
+    | Node2 (g, _, d) -> let l = aux g l in 
+        l @ (aux d l)
+  in
+  aux t []
+  
+  
+
+(* * Q3 *)
+let btree_to_ubtree (t : 'a btree) : 'a ubtree = 
+  let rec aux t' = 
+    match t' with 
+    | Empty -> Empty2
+    | Node (Empty, x, Empty) -> Leaf x
+    | Node (g, x, d) -> Node2(aux g, x, aux d)
+  in 
+  aux t 
+  
+  
+  
+  (* Q1 *)
+let lt_btree (t : 'a btree) (v :'a) : bool = 
+  let rec aux t' : bool =
+    match t' with 
+    | Empty -> true
+    | Node (g, x, d) -> if v <= x then false else aux d
+  in 
+  aux t
+
+(* Q2 *)
+let ge_btree (t : 'a btree) (v : 'a) : bool = 
+  let rec aux t' : bool =
+    match t' with 
+    | Empty -> true
+    | Node (g, x, d) -> if v > x then false else aux g
+  in 
+  aux t
+
+(* Q3 *)
+let is_abr (t : 'a btree)  : bool = 
+  let rec aux t' =
+    match t' with 
+    | Empty -> true 
+    | Node (g, x, d) -> if (lt_btree g x) && (ge_btree d x) then (aux g) && (aux d) else false
+  in
+  aux t 
+
+(* Q4 *)
+let mem (t : 'a btree) (v : 'a) : bool = 
+  let rec aux t' = 
+    match t' with 
+    | Empty -> false 
+    | Node (g, x, d) -> if (x = v) then true else
+        if (x < v) 
+        then 
+          aux d
+        else 
+          aux g
+  in
+  aux t 
+  
+  *
+  
+  (* Q1 *)
+let insert (v : 'a) (t : 'a btree) : 'a btree = 
+  let rec aux t' = 
+    match t' with 
+    | Empty -> Node (Empty, v, Empty) 
+    | Node (g, x, d) -> 
+        if 
+          (x = v) 
+        then
+          Node (g, x, d)
+        else
+        if 
+          (x < v) 
+        then
+          Node (g, x, aux d)
+        else 
+          Node (aux g, x, d)
+  in aux t
+    
+(* Q2 *)
+let from_list1 (l : 'a list) : 'a btree = 
+  let rec aux l a =
+    match l with 
+    | [] -> a
+    | x :: xs -> let a=insert x a in aux xs a
+  in aux l Empty
+  
+  
+  
+  
+let from_list2 _ = failwith "indéfinie"
+let from_list3 _ = failwith "indéfinie"
+
+(* Q3 *)
+
+let to_list _ = failwith "indéfinie"
+let to_list_tr _ = failwith "indéfinie"
+
+(* Q4 *)
+let from_list _ = failwith "indéfinie"
+let tri _ = failwith "indéfinie"
+
+
+
+
+(** Codage Run-Length Encoding *)
+
+let ocaml_s = "OOOOOOOOOOOCCCCAMMMMMMMLL"
+
+(** [string_to_char_list s] découpe la chaîne [s] en liste de
+    caractères. *)
+let string_to_char_list (s : string) : char list =
+  let rec aux i length acc = 
+    if (i < length) then aux (i+1) length (s.[i]::acc) else acc
+  in 
+  List.rev (aux 0 (String.length s) [])
+
+(** [occurences s] calcule la liste des occurences de caractères de
+    [s]. *) 
+(* Il est possible que occurences possède 2 r *)
+let occurences (s : string) : (int * char) list =
+  let q = string_to_char_list s in 
+  let rec aux1 (l : char list) (cPred : char) (dct : (int * char) list) = (
+    match l with 
+    | [] -> dct 
+    | c :: ls -> 
+        if 
+          c != cPred
+        then 
+          aux1 ls c ((1, c)::dct)
+        else
+          match dct with
+          | (nb, c')::dcTail -> aux1 ls c' ((nb+1, c')::dcTail)
+          | _ -> assert false
+  )
+  in match q with 
+  | [] -> []
+  | k :: ls -> List.rev (aux1 ls k [(1, k)])
+  
+(** [encode_rle s] encode la chaîne [s] au format RLE. *)
+let encode_rle (s : string) : string =
+  let dct = occurences s in
+  let rec aux (d : (int * char) list) (res : string) =
+    match d with 
+    | [] -> res 
+    | (nb, c) :: ds -> 
+        let t = String.concat "" [(string_of_int nb) ; (String.make 1 c)] in
+        aux ds (String.concat "" [res; t])
+  in
+  aux dct "" 
+    
+
+(** [decode_rle s_rle] décode la chaîne [s_rle] encodé au format
+    RLE. *)
+
+(* Calcule un entier à partir d'une liste de char, codée ainsie : 
+[1; 2; 3; 4] => 4321
+*)
+let rec convInt (l : int list) (p : int) (acc : int) : int =
+  match l with 
+  | [] -> acc
+  | i :: ls -> let s = (float i) *. (10.**(float p)) in
+      convInt ls (p+1) (acc + (int_of_float s)) 
+;; 
+
+let decode_rle (s_rle : string) : string =
+  let rec conVert (s : string) (res : string) (lstInt : int list) : string =
+    
+
+    let test_rle () =
+      if not (decode_rle (encode_rle ocaml_s) = ocaml_s) then
+        failwith "Incorrect"
+
+(** Codage de Huffman statique *)
+
+(** Type de donnée représentant les arbres de Huffman *)
+type huffman_tree = .. (* À compléter *)
+
+(** [build_huffman_tree s] construit un arbre de Huffman à partir de
+    la chaîne [s]. *)
+let build_huffman_tree (s : string) : huffman_tree =
+  failwith "À compléter"
+
+(** Type de donnée représentant un chemin dans un arbre binaire. *)
+type path = .. (* À compléter *)
+
+(** [compute_paths ht] retourne la liste associant à chaque feuille de
+    l'arbre de Huffman [ht] son chemin depuis la racine dans
+    celui-ci. *)
+let compute_paths (ht : huffman_tree) : (char * path) list =
+  failwith "À compléter"
+
+(** [path_to_bin path] transforme le chemin [path] en une suite de
+    bit. *)
+let path_to_bin (path : path) : bool list =
+  failwith "À compléter"
+
+(** [encode ht s] encode la chaîne de caractère [s] en binaire à
+    partir de l'arbre de Huffman [ht].*)
+let encode (ht : huffman_tree) (s : string) : bool list =
+  failwith "À compléter"
+
+(** [decode ht bit_l] décode le binaire [bit_l] en chaîne de
+    caractère en utilisant l'arbre de Huffman [ht].*)
+let decode (ht : huffman_tree) (bit_l : bool list) : string  =
+  failwith "À compléter"
+
+let test_huffman () =
+  let ht = build_huffman_tree ocaml_s in
+  if not (decode ht (encode ht ocaml_s) = ocaml_s) then
+    failwith "Incorrect"
+
+  

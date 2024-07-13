@@ -28,6 +28,31 @@ void divisionEucli (int a, int b, int res[4])
 }
 
 
+int algoEuclide (int a, int b)
+{
+    int t ; 
+    while (b)
+    {
+        t = b ; 
+        b = a % b ; 
+        a = t ; 
+    }
+    return a ; 
+}
+
+
+int sommeGroupe (int a, int b, int p)
+{
+    return (((a + b) % p) + p) % p ; 
+}
+
+
+int produitGroupe (int a, int b, int p) 
+{
+    return (((a * b) % p) + p) % p ; 
+}
+
+
 // Renvoie l'invese de a dans l'anneau Z/pZ
 int inverseGroupeQuotient (int a, int p)
 {
@@ -54,7 +79,7 @@ void alogEuclideEtendu (int a, int b, int res[3])
     int q = 0 ; 
     int rs, us, vs ; 
     int j = 0 ;
-    while ((rp) && (j < 10000))
+    while (rp)
     {
         q = r / rp ; 
         rs = r ; us = u ; vs = v ; 

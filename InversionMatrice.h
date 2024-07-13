@@ -43,6 +43,7 @@ mat *matriceMineure (mat *m, int ligne, int colonne) ;
 
 // Algorithme de réduction de Gauss 
 
+void regulariseMatrice (mat *m, int p) ; 
 void permutationLigne (mat *m, int l1, int l2) ; 
 void dilateLigne (mat *m, int coef, int ligne, int premier, char type) ; 
 void transvectionLigne (mat *m, int l1, int coef, int l2, int premier, char type)  ; 
