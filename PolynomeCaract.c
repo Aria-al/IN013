@@ -4,6 +4,7 @@
 #include <string.h>
 #include "PolynomeCaract.h"
 
+// Affiche le polynome passé en paramètre 
 void affichePoly (Poly *p) 
 {
     for (int i = 0 ; i < p->d + 1; i++)
@@ -13,7 +14,7 @@ void affichePoly (Poly *p)
     printf("\n") ; 
 }
 
-
+// Recopie le polynôme passé en paramètre 
 Poly *copierPoly (Poly *P, int d) 
 {
     Poly *res = malloc(sizeof(Poly)) ; 
@@ -50,7 +51,7 @@ Poly *copierPoly (Poly *P, int d)
     return res ; 
 }
 
-
+// Calcule le degré maximum entre les deux polynôemes 
 int degreMax (Poly *P1, Poly *P2)
 {
     int dMax ; 
@@ -67,6 +68,8 @@ int degreMax (Poly *P1, Poly *P2)
     return dMax ; 
 }
 
+
+// Calcule l'addition de deux polynômes P1 et P2 dans Z/premierZ, P1 + P2 si s != 's', P1 - P2 sinon 
 Poly *sommePoly (Poly *P1, Poly *P2, char s, int premier) 
 {
     int dMax = degreMax(P1, P2) ; 
@@ -103,7 +106,7 @@ Poly *sommePoly (Poly *P1, Poly *P2, char s, int premier)
     return res ; 
 }
 
-
+// Raccourcit le polynôme passé en paramètre (ne le détruit pas)
 Poly *raccourcitPoly (Poly *P)
 {
     int q = P->d ; 
@@ -118,7 +121,7 @@ Poly *raccourcitPoly (Poly *P)
     return copierPoly(P, q) ; 
 }
 
-
+// Calcule P1 * P2 dans Z/premierZ
 Poly *produitPoly (Poly *P1, Poly *P2, int premier)
 {
     Poly *res = malloc(sizeof(Poly)) ; 
@@ -147,6 +150,7 @@ Poly *produitPoly (Poly *P1, Poly *P2, int premier)
     return res ; 
 }
 
+// Calcule 
 void divisionEucliPoly (Poly *P1, Poly *P2, Poly **Q, Poly **R, int premier) 
 {
     // On définit le quotient comme étant nul 

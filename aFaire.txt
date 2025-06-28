@@ -1,0 +1,1 @@
+Séparer le code de euclideExtend en plusieurs sous-codes

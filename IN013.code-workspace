@@ -9,7 +9,18 @@
 			"stdlib.h": "c",
 			"stdio.h": "c",
 			"inversionmatrice.h": "c",
-			"euclidealgos.h": "c"
+			"euclidealgos.h": "c",
+			"suitedetermine.h": "c",
+			"euclideextend.h": "c",
+			"math.h": "c",
+			"fichier1.h": "c",
+			"string.h": "c",
+			"plycaract.h": "c",
+			"polynomecaract.h": "c",
+			"algoeuclide.h": "c",
+			"fctmatrices.h": "c",
+			"libfunct.h": "c",
+			"fctsuite.h": "c"
 		}
 	}
 }

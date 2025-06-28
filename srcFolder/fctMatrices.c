@@ -1,20 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-#include "EuclideExtend.h"
-
-
-// ax == 1 [b] sachant que on connaît a et b ; ax = 1 + by ; ax - by = 1 
-
-//==============================================================
+#include "./hdrFolder/fctMatrices.h"
 
 // Crée une matrice n x m 
-mat *creeMatrice(int n, int m)
+mat *creeMatrice(int n, int m, int p)
 {
     mat *res = malloc(sizeof(mat)) ; 
     res->n = n ; 
     res->m = m ; 
+    res->p = p ; 
     res->mat = malloc(sizeof(int*) * m) ; 
     for (int i = 0 ; i < n ; i++)
     {
@@ -31,7 +23,7 @@ mat *creeMatrice(int n, int m)
 // Fait la copie d'une matrice 
 mat *copieMatrice (mat *m)
 {
-    mat *res = creeMatrice(m->n, m->m) ; 
+    mat *res = creeMatrice(m->n, m->m, m->p) ; 
     for (int i = 0 ; i < m->n ; i++)
     {
         for (int j = 0 ; j < m->m ; j++)
@@ -46,17 +38,17 @@ mat *copieMatrice (mat *m)
 // Effectue la somme de deux matrices : m1 + m2 = res 
 mat *sommeMatrice (mat *m1, mat *m2) 
 {
-    if ((m1->m != m2->m) || (m1->n != m2->n))
+    if ((m1->m != m2->m) || (m1->n != m2->n) || (m1->p != m2->p))
     {
         return NULL ; 
     }
 
-    mat *res = creeMatrice(m1->n, m1->m) ; 
+    mat *res = creeMatrice(m1->n, m1->m, m1->p) ; 
     for (int i = 0 ; i < m1->n ; i++)
     {
         for (int j = 0 ; j < m1->m ; j++)
         {
-            (res->mat)[i][j] = (m1->mat)[i][j] + (m2->mat)[i][j] ; 
+            (res->mat)[i][j] = addiGrpQuot((m1->mat)[i][j], (m2->mat)[i][j], m1->p) ; 
         }
     }
 
@@ -67,19 +59,20 @@ mat *sommeMatrice (mat *m1, mat *m2)
 // Effectue le produit de deux matrices : m1 x m2 = res 
 mat *produitMatrice(mat *m1, mat *m2)
 {
-    if ((m1->m != m2->n) || (m1->n != m2->n))
+    if ((m1->m != m2->n) || (m1->p != m2->p))
     {
         return NULL ; 
     }
 
-    mat *res = creeMatrice(m1->n, m2->m) ; 
+    mat *res = creeMatrice(m1->n, m2->m, m2->p) ; 
     for (int i = 0 ; i < m1->n ; i++)
     {
         for (int j = 0 ; j < m2->m ; j++)
         {
             for (int t = 0 ; t < m1->m ; t++)
             {
-                (res->mat)[i][j] += (m1->mat)[i][t] * (m2->mat)[t][j] ; 
+                (res->mat)[i][j] = addiGrpQuot(multGrpQuot((m1->mat)[i][j], 
+                                (m2->mat)[i][j], m1->p), (res->mat)[i][j], res->p ) ; 
             }
         }
     }
@@ -100,9 +93,9 @@ void libereMatrice (mat *m)
 
 
 // Renvoie une matrice diagonale de dimention n*n dont la diagonale est remplie de i 
-mat * matriceDiag (int i, int n)
+mat * matriceDiag (int i, int n, int p)
 {
-    mat *res = creeMatrice(n, n) ; 
+    mat *res = creeMatrice(n, n, p) ; 
     for (int t = 0 ; t < n ; t++)
     {
         (res->mat)[t][t] = i ; 
@@ -128,7 +121,7 @@ void afficheMat (mat *m)
 // Renvoie la matrice mineure A(ligne,colonne) qui correspond à la matrice m dont on a retiré une ligne et une colonne 
 mat *matriceMineure (mat *m, int ligne, int colonne) 
 {
-    mat *res = creeMatrice(m->n - 1, m->m - 1) ; 
+    mat *res = creeMatrice(m->n - 1, m->m - 1, m->p) ; 
     int iTemp = 0 ; 
     for (int i = 0 ; i < m->n ; i++)
     {
@@ -172,11 +165,20 @@ int detMatrice (mat *m)
         return 0 ; 
     }
 
-    // On a une matrice 2*2, dont on a la formule directe 
+    if (m->m == 1)
+    {
+        if ((m->mat[0][0] % m->p) != 0)
+        {
+            return 1 ; 
+        }
+    }
+
+    // Si on a une matrice 2*2, dont on a la formule directe 
     if (m->m == 2)
     {
-        int res = ((m->mat)[0][0] * (m->mat)[1][1]) - ((m->mat)[1][0] * (m->mat)[0][1]) ; 
-        return res ; 
+        int v1 = multGrpQuot((m->mat)[0][0], (m->mat)[1][1], m->p) ; 
+        int v2 = multGrpQuot((m->mat)[1][0], (m->mat)[0][1], m->p) ; 
+        return addiGrpQuot(v1, -v2, m->p) ; 
     }
 
     int res = 0 ; 
@@ -184,10 +186,12 @@ int detMatrice (mat *m)
 
     for (int t = 0 ; t < m->n ; t++)
     {
-        if (m->mat[t][0] != 0)
+        if ((m->mat[t][0] % m->p) != 0)
         {
             mat *matMineure = matriceMineure(m, t, 0) ; 
-            res += coef * (m->mat)[t][0] * detMatrice(matMineure) ; 
+            int a = multGrpQuot((m->mat)[t][0], detMatrice(matMineure), m->p) ; 
+            int b = multGrpQuot(coef, a, m->p) ; 
+            res = addiGrpQuot(res, b, m->m) ; 
             libereMatrice(matMineure) ; 
         }
         coef *= -1 ; 
@@ -201,22 +205,22 @@ Réalise la dilation suivante :
     - l <= coef * l si type = 'm'
     - l <= coef^-1 * l si type = 'd' 
 */ 
-void dilateLigne (mat *m, int coef, int ligne, int premier, char type)
+void dilateLigne (mat *m, int coef, int ligne, char type)
 {
     switch (type)
     {
         case 'd' :
-            coef = inverseGroupeQuotient(coef, premier) ; 
+            coef = invGrpQuot(coef, m->p) ; 
             for (int j = 0 ; j < m->m ; j++)
             {
-                (m->mat)[ligne][j] = ((coef * (m->mat)[ligne][j] % premier) + premier) % premier ; 
+                (m->mat)[ligne][j] = multGrpQuot(coef, (m->mat)[ligne][j], m->p) ; 
             }
             break ;
 
         case 'm' : 
             for (int j = 0 ; j < m->m ; j++)
             {
-                (m->mat)[ligne][j] = (coef * (m->mat)[ligne][j]) % premier ; 
+                (m->mat)[ligne][j] = multGrpQuot(coef, (m->mat)[ligne][j], m->p) ; 
             }
             break ; 
 
@@ -245,7 +249,7 @@ Effectue la transvection suivante :
     - l1 <= l1 + coef * l2 si type = 'm'
     - l1 <= l1 + coef^-1 * l2 si type = 'd'
 */ 
-void transvectionLigne (mat *m, int l1, int coef, int l2, int premier, char type) 
+void transvectionLigne (mat *m, int l1, int coef, int l2, char type) 
 {
     if (l1 == l2)
     {
@@ -258,15 +262,19 @@ void transvectionLigne (mat *m, int l1, int coef, int l2, int premier, char type
 
             for (int j = 0 ; j < m->m ; j++)
             {
-                (m->mat)[l1][j] = (((m->mat)[l1][j] + (coef * (m->mat)[l2][j] % premier))  + premier) % premier; 
+                // (m->mat)[l1][j] = (((m->mat)[l1][j] + (coef * (m->mat)[l2][j] % premier))  + premier) % premier; 
+                int a = multGrpQuot(coef, (m->mat)[l2][j], m->p) ; 
+                (m->mat)[l1][j] = addiGrpQuot(a, (m->mat)[l1][j], m->p) ; 
             }
             break ;
 
         case 'd' : 
-
+            coef = invGrpQuot(coef, m->p) ; 
             for (int j = 0 ; j < m->m ; j++)
             {
-                (m->mat)[l1][j] = ((m->mat)[l1][j] + (inverseGroupeQuotient(coef, premier) * (m->mat)[l2][j] % premier)) % premier; 
+                // (m->mat)[l1][j] = ((m->mat)[l1][j] + (invGrpQuot(coef, premier) * (m->mat)[l2][j] % premier)) % premier; 
+                int a = multGrpQuot(coef, (m->mat)[l2][j], m->p) ; 
+                (m->mat)[l1][j] = addiGrpQuot(a, (m->mat)[l1][j], m->p) ; 
             }
             break ; 
 
@@ -281,7 +289,7 @@ void transvectionLigne (mat *m, int l1, int coef, int l2, int premier, char type
 void ecrireMatrice (FILE *f, mat *m)
 {
     // écrit une matrice dans le fichier passé en paramètre 
-    fprintf(f, "n=%d,m=%d\n", m->n, m->m) ; 
+    fprintf(f, "n=%d,m=%d,p=%d\n", m->n, m->m, m->p) ; 
 
     for (int i = 0 ; i < m->n ; i++)
     {
@@ -298,21 +306,22 @@ mat *lireMatrice (FILE *f)
 {
     // Lit une matrice à partir d'un fichier passé en entrée 
     char buff [MAXBUFF] ;  
-    int n, m ; 
-
+    int n, m, p ; 
+    /*    
+    */
     if (fgets(buff, MAXBUFF, f) == NULL) 
     {
         printf("Erreur de lecture du fichier\n") ; 
         return 0 ; 
     }
 
-    if (sscanf(buff, "n=%d,m=%d\n", &n, &m) != 2) 
+    if (sscanf(buff, "n=%d,m=%d,p=%d\n", &n, &m, &p) != 3) 
     {
-        printf("Erreur de lecture de fichier 2 \n") ; 
+        printf("Erreur de format de fichier\n") ; 
         return 0 ; 
     }
 
-    mat *res = creeMatrice(n, m) ; 
+    mat *res = creeMatrice(n, m, p) ; 
 
     char *temp = NULL ; 
     // On lit le fichier 
@@ -335,7 +344,7 @@ mat *lireMatrice (FILE *f)
 // Renvoie la transposée de la matrice, ne libère pas la mémoire de la matrice originale 
 mat *tranposeMatrice (mat *m)
 {
-    mat *res = creeMatrice(m->m, m->n) ; 
+    mat *res = creeMatrice(m->m, m->n, m->p) ; 
     for (int i = 0 ; i < m->n ; i++)
     {
         for (int j = 0 ; j < m->m ; j++)
@@ -348,10 +357,10 @@ mat *tranposeMatrice (mat *m)
 
 
 // Elimination de Gauss-Jordan, renvoie NULL si la matrice est non-inversible 
-mat *eliminationGaussJordan (mat *pa, int premier)
+mat *eliminationGaussJordan (mat *pa)
 {
     mat *m = copieMatrice(pa) ; 
-    mat *res = matriceDiag(1, m->m) ; 
+    mat *res = matriceDiag(1, m->m, m->p) ; 
 
     if (detMatrice(m) == 0) 
     {
@@ -362,12 +371,13 @@ mat *eliminationGaussJordan (mat *pa, int premier)
 
     for (int j = 0 ; j < m->n ; j++)
     {
-        // On cherche la première ligne dont le coefficient dans la colonne donnée est non inverse 
+        // On cherche la première ligne dont le coefficient dans la colonne donnée est inversible
         int nbChange = lignePivot ; 
         for (int i = lignePivot ; i < m->m ; i++)
         {
 
-            if (((m->mat)[i][j] % premier) != 0)
+            //if (((m->mat)[i][j] % premier) != 0)
+            if ((m->mat[i][j] % m->p) != 0)
             {
                 nbChange = i ; 
                 break ;
@@ -380,16 +390,21 @@ mat *eliminationGaussJordan (mat *pa, int premier)
         permutationLigne(m, nbChange, lignePivot) ;
         
         // On divise cette ligne par l'inverse du pivot 
-        dilateLigne(res, (m->mat)[lignePivot][j], lignePivot, premier, 'd') ; 
-        dilateLigne(m, (m->mat)[lignePivot][j], lignePivot, premier, 'd') ; 
+        //dilateLigne(res, (m->mat)[lignePivot][j], lignePivot, premier, 'd') ; 
+        //dilateLigne(m, (m->mat)[lignePivot][j], lignePivot, premier, 'd') ; 
+        dilateLigne(res, (m->mat)[lignePivot][j], lignePivot, 'd') ; 
+        dilateLigne(m, (m->mat)[lignePivot][j], lignePivot, 'd') ; 
 
         // On doit simplifier chacune des qui sont en-dessus dont les coefficients sont nuls 
         for (int i = lignePivot + 1 ; i < m->m ; i++)
         {
-            if (((m->mat)[i][j] % premier) != 0)
+            //if (((m->mat)[i][j] % premier) != 0)
+            if (((m->mat)[i][j] % (m->p)) != 0)
             {
-                transvectionLigne(res, i, -(m->mat)[i][j], lignePivot, premier, 'm') ; 
-                transvectionLigne(m, i, -(m->mat)[i][j], lignePivot, premier, 'm') ; 
+                //transvectionLigne(res, i, -(m->mat)[i][j], lignePivot, premier, 'm') ; 
+                //transvectionLigne(m, i, -(m->mat)[i][j], lignePivot, premier, 'm') ; 
+                transvectionLigne(res, i, -(m->mat)[i][j], lignePivot, 'm') ; 
+                transvectionLigne(m, i, -(m->mat)[i][j], lignePivot, 'm') ; 
             }
         }
 
@@ -402,8 +417,10 @@ mat *eliminationGaussJordan (mat *pa, int premier)
     {
         for (int i = j - 1 ; i >= 0 ; i--)
         {
-            transvectionLigne(res, i, -(m->mat)[i][j], j, premier, 'm') ; 
-            transvectionLigne(m, i, -(m->mat)[i][j], j, premier, 'm') ; 
+            //transvectionLigne(res, i, -(m->mat)[i][j], j, premier, 'm') ; 
+            //transvectionLigne(m, i, -(m->mat)[i][j], j, premier, 'm') ; 
+            transvectionLigne(res, i, -(m->mat)[i][j], j, 'm') ; 
+            transvectionLigne(m, i, -(m->mat)[i][j], j, 'm') ; 
         }
     }
 
@@ -411,124 +428,3 @@ mat *eliminationGaussJordan (mat *pa, int premier)
     return res ; 
 
 }
-
-
-sytChi *creeEq (int nbEqua)
-{
-    // Crée un sytème de reste chinois avec nbEqua équations 
-    sytChi *res = malloc(sizeof(sytChi)) ; 
-    res->nbEqua = nbEqua ; 
-    res->x = 0 ; 
-    res->aCoef = malloc(sizeof(int) * nbEqua) ; 
-    res->mMods = malloc(sizeof(int) * nbEqua) ; 
-    return res ; 
-}
-
-
-// Lit un système de reste chinois dans un fichier passé en paramètre 
-sytChi *lireSytChi (FILE *f)
-{
-    char buff [MAXBUFF] ;  
-    int nbEqa, x ; 
-
-    if (fgets(buff, MAXBUFF, f) == NULL) 
-    {
-        printf("Erreur de lecture du fichier\n") ; 
-        return 0 ; 
-    }
-
-    if (sscanf(buff, "nbEqa : %d, x : %d\n", &nbEqa, &x) != 2) 
-    {
-        printf("Erreur de lecture de fichier 2 \n") ; 
-        return 0 ; 
-    }
-
-    sytChi *res = creeEq(nbEqa) ; 
-
-    res->x = x ; 
-    int a, mod ; 
-    for (int i = 0 ; i < res->nbEqua ; i++)
-    {
-        fgets(buff, MAXBUFF, f) ; 
-        if (sscanf(buff, "%d [%d]\n", &a, &mod) != 2)
-        {
-            return NULL ; 
-        }
-        (res->aCoef)[i] = a ; 
-        (res->mMods)[i] = mod ; 
-    }
-    return res ; 
-}
-
-
-// Ecrit un système de reste chinois dans un fichier passé en paramètre 
-void ecrireSytChi (FILE *f, sytChi *s)
-{
-    fprintf(f, "nbEqa : %d, x : %d\n", s->nbEqua, s->x) ; 
-    for (int i = 0 ; i < s->nbEqua ; i++)
-    {
-        fprintf(f, "%d [%d]\n", (s->aCoef)[i], (s->mMods)[i]) ; 
-    }
-}
-
-
-// Affiche un système de reste chinois 
-void affSytChi (sytChi *s)
-{
-    printf("nbEqua : %d, x : %d\n", s->nbEqua, s->x) ; 
-    for (int i = 0 ; i < s->nbEqua ; i++)
-    {
-        printf("%d = %d [%d]\n", s->x, (s->aCoef)[i], (s->mMods)[i]) ; 
-    }
-}
-
-
-// Résouds un système de reste chinois à 2 équations 
-void resoudreSytChiDuo(sytChi *s)
-{
-    int t[3] ; 
-    alogEuclideEtendu((s->mMods)[0], (s->mMods)[1], t) ; 
-    s->x = (t[2] * (s->mMods)[1] * (s->aCoef)[0]) + (t[1] * (s->mMods)[0] * (s->aCoef)[1]) ; 
-    s->x = (s->x % ((s->mMods)[0] * (s->mMods)[1])) + ((s->mMods)[0] * (s->mMods)[1]) ; 
-}
-
-// Résout un système de reste chinois à n équations 
-void resoudreSytChiRec (sytChi *s)
-{
-    sytChi *temp = creeEq(2) ; 
-    (temp->mMods)[0] = (s->mMods)[0] ; 
-    (temp->mMods)[1] = (s->mMods)[1] ; 
-    (temp->aCoef)[0] = (s->aCoef)[0] ; 
-    (temp->aCoef)[1] = (s->aCoef)[1] ; 
-    resoudreSytChiDuo(temp) ; 
-
-    for (int i = 2 ; i < s->nbEqua ; i++)
-    {
-        (temp->mMods)[0] = ((temp->mMods)[0] * (temp->mMods)[1]) ; 
-        (temp->mMods)[1] = (s->mMods)[i] ; 
-        (temp->aCoef)[0] = temp->x ; 
-        (temp->aCoef)[1] = (s->aCoef)[i] ; 
-        resoudreSytChiDuo(temp) ; 
-    }
-    s->x = temp->x ; 
-    libereSytChi(temp) ; 
-}
-
-// Libère la mémoire allouée à un système de reste chinois 
-void libereSytChi (sytChi *s) 
-{
-    free(s->aCoef) ; 
-    free(s->mMods) ; 
-    free(s) ; 
-}
-
-
-/*
-Version optimisé de résolveur de système de reste chinois 
-1. On fork le programme pour chaque couple d'équation disponible au début 
-2. Chaque fils possédant 2 équations, on éxécute la résolution d'un sytème pour 2 équations 
-3. Le père attend que 2 fils ont fini, recrée un nouveau fils qui exécute la résolution sur
-les deux équations obtenues 
-4. On fait ceci jusqu'à ce qu'il ne reste qu'une seule équations 
-
-*/
