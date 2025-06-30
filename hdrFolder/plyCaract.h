@@ -48,8 +48,11 @@ int degreMax (Poly *P1, Poly *P2) ;
 
 Poly *multPoly (Poly *P1, Poly *P2, int premier) ; 
 
+
 // Calcule -P dans Z/premierZ
 Poly *opposePoly (Poly *P, int premier) ; 
+
+void algoEuclideEtenduPoly (Poly *P1, Poly *P2, Poly ***res, int p) ; 
 
 Poly *algoBerlekampMassey (int *termes, int n, int premier) ; 
 

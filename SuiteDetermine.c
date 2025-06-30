@@ -4,7 +4,7 @@
 #include <string.h>
 #include "SuiteDetermine.h"
 
-void calculeTermesSuite (RelRec *r, int nbVal, int **res) 
+void calculeTermesSuite (RelRec *r, int nbVal, int **res, int p) 
 {
     if (!r)
     {

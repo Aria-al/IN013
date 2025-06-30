@@ -48,6 +48,7 @@ void alogEucliEtendu (int a, int b, int res[3])
     int q = 0 ; 
     int rs, us, vs ; 
     int j = 0 ;
+    
     while ((rp) && (j < 10000))
     {
         q = r / rp ; 

@@ -71,8 +71,8 @@ mat *produitMatrice(mat *m1, mat *m2)
         {
             for (int t = 0 ; t < m1->m ; t++)
             {
-                (res->mat)[i][j] = addiGrpQuot(multGrpQuot((m1->mat)[i][j], 
-                                (m2->mat)[i][j], m1->p), (res->mat)[i][j], res->p ) ; 
+                (res->mat)[i][j] = addiGrpQuot(multGrpQuot((m1->mat)[i][t], 
+                                (m2->mat)[t][j], m1->p), (res->mat)[i][j], res->p ) ; 
             }
         }
     }

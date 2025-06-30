@@ -26,7 +26,7 @@ Les u étant les termes de la base, et les a étant les coefficients
 */
 
 // Retourne les nbVal + nbValBase premières valeurs de la suite, en plus des 
-int *calculeTermesSuite (RelRec *r, int nbVal) ; 
+int *calculeTermesSuite (RelRec *r, int nbVal, int p) ; 
 // Ecrit la relation de réccurence dans un fichier 
 void ecritRelRec (FILE *f, RelRec *r) ; 
 // Lit une relation de récurence dans un fichier 
@@ -51,3 +51,5 @@ int relationCorrecte (int *termeCalc, int *termeSuite, int tailleTab, int *nbEch
 
 // Version 1 de l'algorithme, par inversion directe de matrice 
 RelRec *determineRelationV1 (int nbTermes, int *tab, int p) ; 
+
+RelRec *determineRelationV2 (int nbTermes, int *tab, int p) ; 

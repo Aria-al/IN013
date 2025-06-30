@@ -1,9 +1,10 @@
 #include "./hdrFolder/fctSuite.h"
 
+int p = 13 ; 
 
 int mod (int a)
 {
-    return a % 192217 ; 
+    return a % p ; 
 }
 
 int main ()
@@ -12,11 +13,11 @@ int main ()
     FILE *f = fopen("ex3.txt", "r") ; 
     RelRec *relation = lireRelRec(f) ; 
     afficheRelRec(relation) ; 
-    int nbVal = 15 ; 
-    int *listExp = calculeTermesSuite(relation, nbVal) ; 
+    int nbVal = 20 ; 
+    int *listExp = calculeTermesSuite(relation, nbVal, p) ; 
     int *temp = map(listExp, nbVal, mod) ; 
     afficheTableau(temp, nbVal) ; 
-    RelRec *trouve = determineRelationV1(nbVal, temp, 13) ; 
+    RelRec *trouve = determineRelationV1(nbVal, temp, p) ; 
 
     afficheTableau(listExp, nbVal) ; 
     libereRelRec(relation) ; 

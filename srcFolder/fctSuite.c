@@ -1,17 +1,19 @@
 #include "./hdrFolder/fctSuite.h"
 
-int *calculeTermesSuite (RelRec *rel, int nbVal) 
+int *calculeTermesSuite (RelRec *rel, int nbVal, int p) 
 {
     if (!rel)
     {
         return NULL ; 
     }
+
     int *res = malloc(sizeof(int) * (nbVal + rel->nbValBase)) ; 
     
     // Valeurs de la base 
     for (int i = 0 ; i < rel->nbValBase ; i++)
     {
-        res[i] = (rel->termeBase)[i] ; 
+        // res[i] = (rel->termeBase)[i] ; 
+        res[i] = (rel->termeBase)[i] % p ; 
     }
 
     // Valeurs de la relation de réccurence 
@@ -21,7 +23,8 @@ int *calculeTermesSuite (RelRec *rel, int nbVal)
         int k = 0 ; 
         for (int j = i - rel->nbValBase ; j < i ; j++)
         {
-            res[i] += res[j] * (rel->coefs)[k] ; 
+            // res[i] += res[j] * (rel->coefs)[k] ;
+            res[i] = addiGrpQuot(res[i], multGrpQuot(res[j], (rel->coefs)[k], p), p) ; 
             k += 1 ; 
         }
     }
@@ -239,7 +242,7 @@ RelRec *determineRelationV1 (int nbTermes, int *tab, int p)
             printf("HI") ; 
             res->nbValBase = r ; 
             res->termeBase = copieTableau(tab, r) ; 
-            int *temp = calculeTermesSuite(res, nbTermes) ; 
+            int *temp = calculeTermesSuite(res, nbTermes, p) ; 
             int *valCalc = malloc(sizeof(int) * nbTermes) ; 
             for (int u = 0 ; u < nbTermes ; u++)
             {
@@ -274,4 +277,10 @@ RelRec *determineRelationV1 (int nbTermes, int *tab, int p)
 
     libereMatrice(matDroite) ; 
     return NULL ; 
+}
+
+
+RelRec *determineRelationV2 (int nbTermes, int *tab, int p) 
+{
+
 }
