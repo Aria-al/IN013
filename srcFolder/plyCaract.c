@@ -184,62 +184,55 @@ void divisionEucliPoly (Poly *P1, Poly *P2, Poly **Q, Poly **R, int premier)
 {
 
     // On suppose que Q et R pointent à NULL 
-    Poly *quotient = *Q ; 
-    Poly *reste = *R ; 
+    Poly *quotient ; 
+    Poly *reste ; 
     Poly *numerateur = raccourcitPoly(copierPoly(P1, P1->d)) ; 
     Poly *denomiateur = raccourcitPoly(copierPoly(P2, P2->d)) ; 
-    if (quotient != NULL || reste != NULL)
+    if (*Q != NULL || *R != NULL)
     {
         printf("Reecriture de pointeur quotient ou reste.\n") ; 
         return ; 
     }
+    quotient = initPoly(0) ; 
+    reste = NULL ; 
     
-    quotient = initPoly(max(P1->d, P2->d)) ; 
-    // On ramène le coefficient de la plus grande puissance de x à 1 
-    Poly *polyNorm = initPoly(0) ; 
-    (polyNorm->coefs)[0] = invGrpQuot(denomiateur->coefs[denomiateur->d], premier) ; 
-    Poly *nouveauDenominateur = multPoly(polyNorm, denomiateur, premier) ; 
-    
-    liberePoly(denomiateur) ; 
-    denomiateur = nouveauDenominateur ; 
-    liberePoly(polyNorm) ;
-    Poly *aMultiplier = initPoly(1) ; 
-    /*
-    Tant que deg(numerateur) >= deg(denominateur) : 
-    valSup = -coef(numerateur, deg(numerateur)) * x^(deg(numerateur) - deg(denominateur))
-    plyAddi = valSup * denominateur 
-    quotient = quotient + aSoustraire 
-    numerateur = numerateur - aSoustraire 
-    */
-   Poly *cst = initPoly(0) ; 
-   (cst->coefs)[0] = -1 ; 
-   int nbIter = 0 ; 
-   while (numerateur->d >= denomiateur->d && nbIter < 4)
-    {   
-        //printf("Degree max : %d, etape %d\n", numerateur->d - denomiateur->d, nbIter) ; 
-        aMultiplier = initPoly(numerateur->d - denomiateur->d) ; 
-        (aMultiplier->coefs)[aMultiplier->d] = numerateur->coefs[numerateur->d] ; 
-
-        Poly *toAdd = multPoly(aMultiplier, denomiateur, premier) ; 
-        Poly *newQuotient = sommePoly(quotient, aMultiplier, premier) ; 
-        Poly *toSubstract = multPoly(cst, toAdd, premier) ; 
-        Poly *newNumerateur = sommePoly(numerateur, toSubstract, premier) ; 
-        //printf("MidFunct") ; 
-
-        liberePoly(quotient) ; 
+    Poly *cst ; 
+    int i = 0 ; 
+    while ((numerateur->d >= denomiateur->d) && (i < 10))
+    {
+        /*
+        
+        printf("HI : %d\n", i) ; 
+        affichePoly(numerateur) ; 
+        affichePoly(quotient) ; 
+        */ 
+        int coefMult = oppGrpQuot(multGrpQuot(numerateur->coefs[numerateur->d], invGrpQuot(denomiateur->coefs[denomiateur->d], premier), premier), premier) ; 
+        cst = initPoly(numerateur->d - denomiateur->d) ; 
+        (cst->coefs)[cst->d] = coefMult ; 
+        Poly *DenTemp = multPoly(denomiateur, cst, premier) ; 
+        Poly *NumTemp = sommePoly(numerateur, DenTemp, premier) ; 
         liberePoly(numerateur) ; 
-        liberePoly(toAdd) ; 
-        liberePoly(toSubstract) ; 
+        numerateur = copierPoly(NumTemp, NumTemp->d) ; 
+        (cst->coefs)[cst->d] = oppGrpQuot((cst->coefs)[cst->d], premier) ; 
+        Poly *QuotTemp = sommePoly(quotient, cst, premier) ; 
+        liberePoly(quotient) ; 
+        quotient = copierPoly(QuotTemp, QuotTemp->d) ; 
+        
+        liberePoly(DenTemp) ; 
+        liberePoly(QuotTemp) ; 
+        liberePoly(NumTemp) ; 
 
-        numerateur = raccourcitPoly(newNumerateur) ; 
-        quotient = raccourcitPoly(newQuotient) ; 
-        nbIter += 1 ; 
-        printf("Iter Euclide#%d\n", nbIter) ; 
+        numerateur = raccourcitPoly(numerateur) ; 
+        quotient = raccourcitPoly(quotient) ; 
+
+        //printf("FinPR\n") ; 
+        i++ ; 
     }
 
-    *R = numerateur ; 
+    reste = copierPoly(numerateur, numerateur->d) ; 
+
     *Q = quotient ; 
-    
+    *R = reste ; 
 }
 
 int estPolyNul (Poly *P) 
@@ -372,10 +365,10 @@ void algoEuclideEtenduPoly (Poly *P1, Poly *P2, Poly ***res, int p)
     U->coefs[0] = 1 ; 
     Poly *Uprec = initPoly(0) ; 
     Poly *V = initPoly(0) ; 
-    V->coefs[0] = 1 ; 
     Poly *Vprec = initPoly(0) ; 
+    Vprec->coefs[0] = 1 ; 
     Poly *Q = NULL ; 
-    Poly *Rtemp, *Utemp, *Vtemp ; 
+    Poly *Rs, *Us, *Vs ; 
     Poly *Reste = NULL ; 
     Poly *temp1, *temp2, *temp3 ; 
     Poly polNul ; 
@@ -384,68 +377,84 @@ void algoEuclideEtenduPoly (Poly *P1, Poly *P2, Poly ***res, int p)
     polNul.coefs[0] = 0 ; 
     int j = 0 ; 
 
-    while (!(degreMax(&polNul, R) < degreMax(&polNul, V)) && (j < 3))
+    while (!(R->d < V->d) && (j < 5))
     {
-        printf("Tour EuclideExtend: %d\n", j) ; 
-        affichePoly(R) ; 
-        affichePoly(Rprec) ; 
+        //printf("Tour EuclideExtend: %d\n", j) ; 
+        //affichePoly(R) ; 
+        //affichePoly(Rprec) ; 
         //affichePoly(V) ; 
+        R = raccourcitPoly(R) ; 
+        Rprec = raccourcitPoly(Rprec) ; 
         
         divisionEucliPoly(R, Rprec, &Q, &Reste, p) ; 
+        //affichePoly(Q) ; 
         affichePoly(Q) ; 
+        affichePoly(Reste) ; 
+        printf("PostDiv\n") ; 
         
-        Rtemp = raccourcitPoly(copierPoly(R, R->d)) ; 
-        Utemp = raccourcitPoly(copierPoly(U, U->d)) ; 
-        Vtemp = raccourcitPoly(copierPoly(V, V->d)) ; 
+        Rs = raccourcitPoly(copierPoly(R, R->d)) ; 
+        Us = raccourcitPoly(copierPoly(U, U->d)) ; 
+        Vs = raccourcitPoly(copierPoly(V, V->d)) ; 
         liberePoly(R) ; liberePoly(U) ; liberePoly(V) ; 
         R = raccourcitPoly(copierPoly(Rprec, Rprec->d)) ; 
         U = raccourcitPoly(copierPoly(Uprec, Uprec->d)) ; 
         V = raccourcitPoly(copierPoly(Vprec, Vprec->d)) ; 
-        // Rprec = Rtemp - Rprec * Q
+        // Rprec = (Rs (- (Q * Rprec)))
         temp1 = multPoly(Rprec, Q, p) ; 
         temp2 = opposePoly(temp1, p) ; 
-        temp3 = sommePoly(Rtemp, temp2, p) ; 
+        temp3 = sommePoly(Rs, temp2, p) ; 
         liberePoly(Rprec) ; 
         Rprec = raccourcitPoly(copierPoly(temp3, temp3->d)) ; 
         
-        liberePoly(Rtemp) ; 
+        liberePoly(Rs) ; 
         liberePoly(temp1) ; 
         liberePoly(temp2) ; 
         liberePoly(temp3) ; 
         
-        // Uprec = Utemp - Uprec * Q
+        // Uprec = Us - Q * Uprec
         temp1 = multPoly(Uprec, Q, p) ; 
         temp2 = opposePoly(temp1, p) ; 
-        temp3 = sommePoly(Utemp, temp2, p) ; 
+        temp3 = sommePoly(Us, temp2, p) ; 
         liberePoly(Uprec) ; 
         Uprec = raccourcitPoly(copierPoly(temp3, temp3->d)) ; 
         
-        liberePoly(Utemp) ; 
+        liberePoly(Us) ; 
         liberePoly(temp1) ; 
         liberePoly(temp2) ; 
         liberePoly(temp3) ; 
         
-        // Vprec = Vtemp - Vprec * Q
+        // Vprec = Vs - Q * Vprec
         temp1 = multPoly(Vprec, Q, p) ; 
         temp2 = opposePoly(temp1, p) ; 
-        temp3 = sommePoly(Vtemp, temp2, p) ; 
+        temp3 = sommePoly(Vs, temp2, p) ; 
         liberePoly(Vprec) ; 
         Vprec = raccourcitPoly(copierPoly(temp3, temp3->d)) ; 
         
-        liberePoly(Vtemp) ; 
+        liberePoly(Vs) ; 
         liberePoly(temp1) ; 
         liberePoly(temp2) ; 
         liberePoly(temp3) ; 
+
+        printf("Tour : %d\n", j) ; 
+        affichePoly(Q) ; 
+        affichePoly(R) ; 
+        affichePoly(Rprec) ; 
+        affichePoly(Uprec) ; 
+        affichePoly(Vprec) ; 
         liberePoly(Q) ; 
         liberePoly(Reste) ; 
         Q = NULL ; 
         Reste = NULL ; 
-
+        
+        
         j ++ ; 
+        /*
+        
+        */
     }
-    printf("Fin euclideEtendu\n") ; 
-    affichePoly(R) ; 
-    affichePoly(V) ; 
+    //printf("Fin euclideEtendu\n") ; 
+    //affichePoly(R) ; 
+    //affichePoly(V) ; 
 
     Poly **tabRes = *res ; 
     tabRes[0] = raccourcitPoly(copierPoly(R, R->d)) ; 

@@ -234,6 +234,10 @@ void dilateLigne (mat *m, int coef, int ligne, char type)
 // Effectue la permutations des lignes de numéros l1 et l2 
 void permutationLigne (mat *m, int l1, int l2)
 {
+    if (l1 == l2)
+    {
+        return ; 
+    }
     int temp ; 
     for (int j = 0 ; j < m->m ; j++)
     {
@@ -355,6 +359,14 @@ mat *tranposeMatrice (mat *m)
     return res ; 
 }
 
+int rangMatrice (mat *pa)
+{
+    mat *m = copieMatrice(pa) ; 
+
+    int lignePivot = 0 ; 
+
+    
+}
 
 // Elimination de Gauss-Jordan, renvoie NULL si la matrice est non-inversible 
 mat *eliminationGaussJordan (mat *pa)
@@ -427,4 +439,4 @@ mat *eliminationGaussJordan (mat *pa)
     libereMatrice(m) ; 
     return res ; 
 
-}
+} 

@@ -21,6 +21,10 @@ void divEucli (int a, int b, int res[4])
     res[3] = max - (res[2] * min) ; 
 }
 
+int oppGrpQuot (int a, int p)
+{
+    return (p - (a % p)) % p ; 
+}
 
 // Renvoie l'invese de a dans l'anneau Z/pZ
 int invGrpQuot (int a, int p)

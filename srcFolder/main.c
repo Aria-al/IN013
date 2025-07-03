@@ -1,12 +1,12 @@
 #include "./hdrFolder/fctSuite.h"
 
-int p = 13 ; 
+int p = 8083 ; 
 
 int mod (int a)
 {
     return a % p ; 
 }
-
+//128,64,32,16,8,4,2,1
 int main ()
 {
     printf("HIII\n") ; 
@@ -17,7 +17,7 @@ int main ()
     int *listExp = calculeTermesSuite(relation, nbVal, p) ; 
     int *temp = map(listExp, nbVal, mod) ; 
     afficheTableau(temp, nbVal) ; 
-    RelRec *trouve = determineRelationV1(nbVal, temp, p) ; 
+    RelRec *trouve = determineRelationV3(nbVal, temp, p) ; 
 
     afficheTableau(listExp, nbVal) ; 
     libereRelRec(relation) ; 

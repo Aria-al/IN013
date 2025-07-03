@@ -5,6 +5,7 @@
 #include "./hdrFolder/algoEuclide.h"
 #include "./hdrFolder/fctMatrices.h"
 #include "./hdrFolder/libFunct.h"
+#include "./hdrFolder/plyCaract.h"
 
 /*
 Définit une relation de réccurence d'ordre nbValBase, avec les coefficients de la réccurence
@@ -53,3 +54,5 @@ int relationCorrecte (int *termeCalc, int *termeSuite, int tailleTab, int *nbEch
 RelRec *determineRelationV1 (int nbTermes, int *tab, int p) ; 
 
 RelRec *determineRelationV2 (int nbTermes, int *tab, int p) ; 
+
+RelRec *determineRelationV3 (int nbTermes, int *tab, int p) ; 

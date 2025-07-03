@@ -47,7 +47,7 @@ Poly *raccourcitPoly (Poly *P) ;
 int degreMax (Poly *P1, Poly *P2) ; 
 
 Poly *multPoly (Poly *P1, Poly *P2, int premier) ; 
-
+Poly *initPoly (int d) ; 
 
 // Calcule -P dans Z/premierZ
 Poly *opposePoly (Poly *P, int premier) ; 

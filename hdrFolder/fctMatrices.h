@@ -47,3 +47,5 @@ void permutationLigne (mat *m, int l1, int l2) ;
 void dilateLigne (mat *m, int coef, int ligne, char type) ; 
 void transvectionLigne (mat *m, int l1, int coef, int l2, char type)  ; 
 mat *eliminationGaussJordan (mat *m) ; 
+// !!!!!!A FAIRE!!!!!!!!!!!!!!!
+int rangMatrice (mat *m) ; 

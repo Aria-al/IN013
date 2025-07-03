@@ -284,3 +284,70 @@ RelRec *determineRelationV2 (int nbTermes, int *tab, int p)
 {
 
 }
+
+RelRec *determineRelationV3 (int nbTermes, int *tab, int p) 
+{
+    Poly *P1 ; 
+    Poly *P2 ; 
+    RelRec *res ; 
+
+    for (int d = 0 ; d < nbTermes - 1 ; d++)
+    {
+        printf("======================================ITER : %d\n\n", d) ; 
+        // X^(d+1)
+        P1 = initPoly(d+1) ; 
+        P1->coefs[d+1] = 1 ; 
+        // uix^i
+        P2 = initPoly(d) ; 
+        for (int i = 0 ; i < d + 1 ; i++) 
+        {
+            P2->coefs[d - i] = tab[i] ; 
+            //P2->coefs[i] = tab[i] ; 
+        }
+        P1 = raccourcitPoly(P1) ;
+        P2 = raccourcitPoly(P2) ; 
+
+        // Division euclidienne 
+        Poly **tabPolyRes = malloc(sizeof(Poly*) * 3) ; 
+        affichePoly(P2) ; 
+        affichePoly(P1) ; 
+        algoEuclideEtenduPoly(P1, P2, &tabPolyRes, p) ; 
+
+        Poly *plySuite = raccourcitPoly(copierPoly(tabPolyRes[2], tabPolyRes[2]->d)) ; 
+        printf("Polynome resultant : \n") ; 
+        affichePoly(plySuite) ; 
+        res = malloc(sizeof(RelRec)) ; 
+        res->nbValBase = plySuite->d ; 
+        res->coefs = malloc(sizeof(int) * (res->nbValBase)) ; 
+        res->termeBase = copieTableau(tab, res->nbValBase) ; 
+        res->coefs = copieTableau(plySuite->coefs, plySuite->d) ; 
+        int cr = invGrpQuot(plySuite->coefs[plySuite->d], p) ; 
+        cr = p - cr ; 
+        for (int i = 0 ; i < res->nbValBase ; i++)
+        {
+            (res->coefs)[i] = multGrpQuot(cr, res->coefs[i], p) ; 
+        }
+
+        liberePoly(tabPolyRes[0]) ; 
+        liberePoly(tabPolyRes[1]) ; 
+        liberePoly(tabPolyRes[2]) ; 
+        free(tabPolyRes) ; 
+        liberePoly(plySuite) ; 
+        liberePoly(P1) ; 
+        liberePoly(P2) ; 
+        int nbEchecs = 0 ; 
+        int *valCalc = calculeTermesSuite(res, nbTermes, p) ; 
+        afficheRelRec(res) ; 
+        if (relationCorrecte(valCalc, tab, nbTermes, &nbEchecs))
+        {
+            printf("Relation valide\n") ; 
+            return res ; 
+        }
+        else 
+        {
+            printf("Relation invalide, #echecs : %d\n", nbEchecs) ; 
+            libereRelRec(res) ; 
+        }
+    }
+    return NULL ; 
+}
