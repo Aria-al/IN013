@@ -14,3 +14,5 @@ int *copieTableau (int *tab, int len) ;
 void afficheTableau (int *tab, int len) ; 
 // Applique la fonction func sur tab
 int *map (int *tab, int len, int (*func) (int)) ; 
+
+int sqrAndMult (int x, int e) ; 

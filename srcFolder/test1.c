@@ -10,11 +10,16 @@ Si le fichier est nommé test, plante car supprimé par avira et pas décontamin
 
 int main (int argc, char const *argv[])
 {
-    FILE *f = fopen("ex1.txt", "r") ; 
-    mat *u = lireMatrice(f) ;
-    printf("==============================\n") ; 
-    afficheMat(u) ; 
-    printf("==============================\n") ; 
-    int t = rangMatrice(u) ; 
+    FILE *f = fopen("ex3.txt", "r") ; 
+    RelRec *r = lireRelRec(f) ; 
+    afficheRelRec(r) ; 
+    int p = 301 ; 
+    int N = 10 ; 
+    int a = calcTermeSuite (r, p, N) ; 
+    printf("Terme #%d : %d\n", N, a) ; 
+
+    
+    /*
+    */
     return 0 ; 
 }

@@ -7,11 +7,13 @@ mat *creeMatrice(int n, int m, int p)
     res->n = n ; 
     res->m = m ; 
     res->p = p ; 
-    res->mat = malloc(sizeof(int*) * m) ; 
-    for (int i = 0 ; i < n ; i++)
+    
+    
+    res->mat = malloc(sizeof(int*) * res->n) ; 
+    for (int i = 0 ; i < res->n ; i++)
     {
-        (res->mat)[i] = malloc(sizeof(int) * m) ; 
-        for (int j = 0 ; j < m ; j++)
+        (res->mat)[i] = malloc(sizeof(int) * res->m) ; 
+        for (int j = 0 ; j < res->m ; j++)
         {
             res->mat[i][j] = 0 ; 
         }
@@ -28,6 +30,7 @@ mat *copieMatrice (mat *m)
     {
         for (int j = 0 ; j < m->m ; j++)
         {
+            
             (res->mat)[i][j] = (m->mat)[i][j] ; 
         }
     }
@@ -80,6 +83,40 @@ mat *produitMatrice(mat *m1, mat *m2)
     return res ; 
 }
 
+
+mat *expRapideMat (mat *m1, int e)
+{
+    mat *res = NULL ; 
+    if (e > 0)
+    {
+        res = expRapideMat(m1, e/2) ; 
+        //afficheMat(res) ; 
+        mat *temp = produitMatrice(res, res) ; 
+        mat *temp1 = NULL ; 
+        switch (e % 2)
+        {
+        case 0 :
+            printf("0\n") ; 
+            temp1 = copieMatrice(temp) ; 
+            break;
+
+        case 1 :
+            printf("1\n") ; 
+            temp1 = produitMatrice(temp, m1) ; 
+            break;
+        
+        default:
+            break;
+        }
+        libereMatrice(res) ; 
+        libereMatrice(temp) ; 
+        return temp1 ; 
+    }
+    else 
+    {
+        return matriceDiag(1, m1->n, m1->p) ; 
+    }
+}
 
 // Libère la mémoire occupée par la matrice 
 void libereMatrice (mat *m)
@@ -311,8 +348,6 @@ mat *lireMatrice (FILE *f)
     // Lit une matrice à partir d'un fichier passé en entrée 
     char buff [MAXBUFF] ;  
     int n, m, p ; 
-    /*    
-    */
     if (fgets(buff, MAXBUFF, f) == NULL) 
     {
         printf("Erreur de lecture du fichier\n") ; 
@@ -329,7 +364,6 @@ mat *lireMatrice (FILE *f)
 
     char *temp = NULL ; 
     // On lit le fichier 
-
     for (int i = 0 ; i < n ; i++)
     {
         fgets(buff, MAXBUFF, f) ; 
@@ -359,13 +393,56 @@ mat *tranposeMatrice (mat *m)
     return res ; 
 }
 
-int rangMatrice (mat *pa)
+mat* matriceEchelonnee (mat *pa)
 {
     mat *m = copieMatrice(pa) ; 
+    int r = 0 ; 
+    for (int j = 0 ; j < m->m ; j++)
+    {
+        int k = j ; 
+        for (int i = r ; i < m->n ; i++)
+        {
+            if (abs(m->mat[i][j]) > abs(m->mat[k][j]))
+            {
+                k = i ; 
+            }
+        }
+        if (addiGrpQuot(m->mat[k][j], 0, m->p) != 0)
+        {
+            dilateLigne(m, m->mat[k][j], k, 'd') ; 
+            
+            permutationLigne(m, k, r) ; 
 
-    int lignePivot = 0 ; 
+            for (int i = 0 ; i < m->n ; i++)
+            {
+                if (i != r)
+                {
+                    transvectionLigne(m, i, m->p - (m->mat[i][j]), r, 'm') ; 
+                }
+            }
+        }
+        r = r + 1 ; 
+    }
 
-    
+    return m ; 
+}
+
+int rangMat (mat *m)
+{
+    mat *mEch = matriceEchelonnee(m) ; 
+    for (int i = 0 ; i < mEch->n ; i++)
+    {
+        int estNul = 1 ; 
+        for (int j = 0 ; j < mEch->m ; j++)
+        {
+            estNul = estNul && (mEch->mat[i][j] % m->p) ; 
+        }
+        if (estNul)
+        {
+            return i + 1; 
+        }
+    }
+    return mEch->n ; 
 }
 
 // Elimination de Gauss-Jordan, renvoie NULL si la matrice est non-inversible 
@@ -438,5 +515,4 @@ mat *eliminationGaussJordan (mat *pa)
 
     libereMatrice(m) ; 
     return res ; 
-
 } 

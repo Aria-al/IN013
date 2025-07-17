@@ -67,3 +67,33 @@ void afficheTableau (int *tab, int len)
     }
     printf("[%d,%d]\n", len-1, tab[len-1]) ; 
 }
+
+// Calcule x^e
+int sqrAndMult (int x, int e)
+{
+    int res = 1 ; 
+    if (e > 0)
+    {
+        res = sqrAndMult(x, e/2) ; 
+        switch (e % 2)
+        {
+        case 0 :
+            res = res * res ; 
+            break ;
+
+        case 1 : 
+            res = res * res * x ;     
+            break ; 
+        
+        default :
+            res = res ; 
+            break ;
+        }
+        return res ; 
+    }
+    else
+    {
+        return res ; 
+    }
+    
+}

@@ -178,6 +178,17 @@ int relationCorrecte (int *termeCalc, int *termeSuite, int tailleTab, int *nbEch
     return 0 ; 
 }
 
+int relationEchecRang (int *termeCalc, int *termeSuite, int tailleTab)
+{
+    for (int i = 0 ; i < tailleTab ; i++)
+    {
+        if (termeCalc[i] != termeSuite[i])
+        {
+            return i ; 
+        }
+    }
+    return -1 ; 
+}
 /*
 
 Donne la matrice suivante : 
@@ -282,7 +293,83 @@ RelRec *determineRelationV1 (int nbTermes, int *tab, int p)
 
 RelRec *determineRelationV2 (int nbTermes, int *tab, int p) 
 {
+    RelRec *res = malloc(sizeof(RelRec)) ; 
+    mat *matDroite = malloc(sizeof(mat)) ; 
+    matDroite->m = 1 ; 
+    matDroite->n = 1 ; 
+    matDroite->p = p ; 
+    matDroite->mat = malloc(sizeof(int*) * matDroite->n) ;     
+    // En employant M*
+    for (int r = 1 ; 2*r < nbTermes + 1 ; r++)
+    {
+        mat *matGauche = donneMatriceCarreSuite(nbTermes, tab, r, p) ; 
+        // On initialise le vecteur de gauche 
+        matDroite->n = r ; 
+        matDroite->mat = malloc(sizeof(int*) * matDroite->n) ; 
 
+        for (int i = 0 ; i < r ; i++)
+        {
+            matDroite->mat[i] = malloc(sizeof(int)) ; 
+            matDroite->mat[i][0] = tab[r + i] ; 
+        }
+
+        mat *invMatGauche = eliminationGaussJordan(matGauche) ; 
+        if (invMatGauche != NULL)
+        {
+            /*
+            */
+            printf("\n") ; 
+            afficheMat(invMatGauche) ; 
+            printf("\n") ; 
+            afficheMat(matDroite) ; 
+            mat *vctRes = produitMatrice(invMatGauche, matDroite) ; 
+            printf("FinProd\n") ; 
+            //printf("%d\n", vctRes) ; 
+            res->coefs = malloc(sizeof(int) * r) ; 
+            printf("HI") ; 
+            for (int i = 0 ; i < r ; i++)
+            {
+                res->coefs[i] = vctRes->mat[i][0] ; 
+            }
+            printf("HI") ; 
+            res->nbValBase = r ; 
+            res->termeBase = copieTableau(tab, r) ; 
+            int *temp = calculeTermesSuite(res, nbTermes, p) ; 
+            int *valCalc = malloc(sizeof(int) * nbTermes) ; 
+            for (int u = 0 ; u < nbTermes ; u++)
+            {
+                valCalc[u] = temp[u] % p ; 
+            }
+            int rangEchec = relationEchecRang(valCalc, tab, nbTermes) ; 
+            //
+            if (rangEchec == -1)
+            {
+                printf("Relation correcte pour r=%d\n", r) ; 
+                free(valCalc) ; 
+                libereMatrice(matGauche) ; 
+                libereMatrice(vctRes) ; 
+                libereMatrice(invMatGauche) ; 
+                libereMatrice(matDroite) ; 
+                return res ; 
+            }
+            else 
+            {
+                printf("Relation incorrecte au rang %d\n", rangEchec) ; 
+                afficheTableau(valCalc, nbTermes) ; 
+                printf("\n") ; 
+                afficheTableau(tab, nbTermes) ; 
+                r = rangEchec ; 
+            }
+        }
+
+        else 
+        {
+            printf("Pour r=%d, matrice non inversible\n", r) ; 
+        }
+    }
+
+    libereMatrice(matDroite) ; 
+    return NULL ; 
 }
 
 RelRec *determineRelationV3 (int nbTermes, int *tab, int p) 
@@ -350,4 +437,41 @@ RelRec *determineRelationV3 (int nbTermes, int *tab, int p)
         }
     }
     return NULL ; 
+}
+
+
+int calcTermeSuite (RelRec *relation, int p, int N)
+{
+    mat *m = creeMatrice(relation->nbValBase, relation->nbValBase, p) ; 
+    for (int j = 0 ; j < m->m ; j++)
+    {
+        (m->mat)[m->n - 1][j] = (relation->coefs)[j] ;  
+    }
+    for (int i = 0 ; i < m->n ; i++)
+    {
+        (m->mat)[i][i+1] = 1 ; 
+    }
+    if (N > relation->nbValBase)
+    {
+        mat *pExp = expRapideMat(m, N - relation->nbValBase + 1) ; 
+        mat *vect = creeMatrice(relation->nbValBase, 1, p) ; 
+        for (int i = 0 ; i < relation->nbValBase ; i++)
+        {
+            (vect->mat)[i][0] = (relation->termeBase)[i] ; 
+        }
+        mat *mRes = produitMatrice(pExp, vect) ; 
+        int res = mRes->mat[mRes->n - 1][0] ; 
+        libereMatrice(pExp) ; 
+        libereMatrice(vect) ; 
+        libereMatrice(mRes) ; 
+        libereMatrice(m) ; 
+        return res ; 
+    }
+    else 
+    {
+        libereMatrice(m) ; 
+        return (relation->termeBase)[N] ; 
+    }
+
+    return 1 ; 
 }

@@ -46,6 +46,8 @@ mat *matriceMineure (mat *m, int ligne, int colonne) ;
 void permutationLigne (mat *m, int l1, int l2) ; 
 void dilateLigne (mat *m, int coef, int ligne, char type) ; 
 void transvectionLigne (mat *m, int l1, int coef, int l2, char type)  ; 
-mat *eliminationGaussJordan (mat *m) ; 
-// !!!!!!A FAIRE!!!!!!!!!!!!!!!
-int rangMatrice (mat *m) ; 
+mat *eliminationGaussJordan (mat *m) ;
+mat *matriceEchelonnee (mat *m) ; 
+int rangMat (mat *m) ; 
+
+mat *expRapideMat (mat *m1, int e) ; 

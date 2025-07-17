@@ -66,14 +66,18 @@ void alogEucliEtendu (int a, int b, int res[3])
 
 int addiGrpQuot (int a, int b, int p)
 {
-    a = (a % p) + p ; 
-    b = (b % p) + p ; 
+    a = ((a % p) + p) % p ; 
+    b = ((b % p) + p) % p ; 
     return (a + b) % p ; 
 }
 
 int multGrpQuot (int a, int b, int p)
 {
-    a = (a % p) + p ; 
-    b = (b % p) + p ; 
+    if (!(a % p) || !(b % p))
+    {
+        return 0 ; 
+    }
+    a = ((a % p) + p) % p ; 
+    b = ((b % p) + p) % p ; 
     return (a * b) % p ; 
 }

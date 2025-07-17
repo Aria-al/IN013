@@ -56,3 +56,5 @@ RelRec *determineRelationV1 (int nbTermes, int *tab, int p) ;
 RelRec *determineRelationV2 (int nbTermes, int *tab, int p) ; 
 
 RelRec *determineRelationV3 (int nbTermes, int *tab, int p) ; 
+
+int calcTermeSuite (RelRec *relation, int p, int N) ; 
